@@ -1,0 +1,76 @@
+export const common = {
+  en: {
+    brand: 'Masar',
+    actions: {
+      save: 'Save', saving: 'Saving…', cancel: 'Cancel', back: 'Back', next: 'Next', continue: 'Continue', retry: 'Try again',
+      close: 'Close', edit: 'Edit', delete: 'Delete', remove: 'Remove', confirm: 'Confirm', submit: 'Submit', search: 'Search',
+      viewAll: 'View all', add: 'Add', send: 'Send', signOut: 'Sign out', apply: 'Apply', copy: 'Copy', details: 'Details', refresh: 'Refresh',
+      loadMore: 'Load more', call: 'Call', message: 'Message',
+    },
+    state: { loading: 'Loading…', empty: 'Nothing here yet', offline: 'Reconnecting…', online: 'Live', error: 'Something went wrong' },
+    settings: { theme: 'Appearance', light: 'Light', dark: 'Dark', system: 'System', language: 'Language', english: 'English', arabic: 'العربية' },
+    auth: {
+      signIn: 'Sign in', signUp: 'Create account', signingIn: 'Signing in…', welcome: 'Welcome back', createTitle: 'Create your account',
+      emailOrPhone: 'Email or phone', email: 'Email', phone: 'Phone number', password: 'Password', firstName: 'First name', lastName: 'Last name',
+      forgot: 'Forgot password?', noAccount: "Don't have an account?", haveAccount: 'Already have an account?', reset: 'Reset password',
+      resetTitle: 'Reset your password', resetHelp: "Enter your email or phone and we'll send you a 6-digit code.", sendCode: 'Send code',
+      code: 'Verification code', newPassword: 'New password', codeSent: 'We sent a code. In development it appears in the API log.',
+      resetDone: 'Password updated — please sign in', demo: 'Demo account', useDemo: 'Use demo account', or: 'or',
+      continueWithGoogle: 'Continue with Google', continueWithApple: 'Continue with Apple', socialUnavailable: 'Social sign-in is not configured on this server yet',
+      passwordHint: 'At least 8 characters with a letter and a number', terms: 'By continuing you agree to the Terms of Service and Privacy Policy.',
+      verifyPhone: 'Verify your phone', verifyHelp: 'Enter the 6-digit code we sent to {{target}}', verify: 'Verify', verified: 'Verified',
+    },
+    ride: {
+      status: {
+        REQUESTED: 'Requested', SEARCHING: 'Finding a driver', ACCEPTED: 'Driver assigned', DRIVER_ARRIVING: 'Driver on the way',
+        ARRIVED: 'Driver arrived', IN_PROGRESS: 'On trip', COMPLETED: 'Completed', PAYMENT_PENDING: 'Payment pending',
+        PAYMENT_COMPLETED: 'Completed', CANCELLED: 'Cancelled', EXPIRED: 'Expired', NO_DRIVER_AVAILABLE: 'No driver found',
+      },
+      payment: { CASH: 'Cash', CARD: 'Card', WALLET: 'Wallet' },
+      pickup: 'Pickup', dropoff: 'Destination', scheduled: 'Scheduled',
+    },
+    errors: {
+      generic: 'Something went wrong. Please try again.', network: 'You appear to be offline.', notFound: 'Page not found',
+      notFoundHelp: "The page you're looking for doesn't exist or was moved.", goHome: 'Go home', required: 'Required',
+    },
+    pwa: { install: 'Install app', installHelp: 'Add Masar to your home screen for a faster, full-screen experience.' },
+    time: { min: 'min', now: 'now' },
+  },
+  ar: {
+    brand: 'مسار',
+    actions: {
+      save: 'حفظ', saving: 'جارٍ الحفظ…', cancel: 'إلغاء', back: 'رجوع', next: 'التالي', continue: 'متابعة', retry: 'حاول مجدداً',
+      close: 'إغلاق', edit: 'تعديل', delete: 'حذف', remove: 'إزالة', confirm: 'تأكيد', submit: 'إرسال', search: 'بحث',
+      viewAll: 'عرض الكل', add: 'إضافة', send: 'إرسال', signOut: 'تسجيل الخروج', apply: 'تطبيق', copy: 'نسخ', details: 'التفاصيل', refresh: 'تحديث',
+      loadMore: 'عرض المزيد', call: 'اتصال', message: 'مراسلة',
+    },
+    state: { loading: 'جارٍ التحميل…', empty: 'لا يوجد شيء هنا بعد', offline: 'جارٍ إعادة الاتصال…', online: 'مباشر', error: 'حدث خطأ ما' },
+    settings: { theme: 'المظهر', light: 'فاتح', dark: 'داكن', system: 'تلقائي', language: 'اللغة', english: 'English', arabic: 'العربية' },
+    auth: {
+      signIn: 'تسجيل الدخول', signUp: 'إنشاء حساب', signingIn: 'جارٍ تسجيل الدخول…', welcome: 'أهلاً بعودتك', createTitle: 'أنشئ حسابك',
+      emailOrPhone: 'البريد الإلكتروني أو رقم الجوال', email: 'البريد الإلكتروني', phone: 'رقم الجوال', password: 'كلمة المرور', firstName: 'الاسم الأول', lastName: 'اسم العائلة',
+      forgot: 'نسيت كلمة المرور؟', noAccount: 'ليس لديك حساب؟', haveAccount: 'لديك حساب بالفعل؟', reset: 'إعادة تعيين كلمة المرور',
+      resetTitle: 'استعادة كلمة المرور', resetHelp: 'أدخل بريدك الإلكتروني أو رقم جوالك وسنرسل لك رمزاً من 6 أرقام.', sendCode: 'إرسال الرمز',
+      code: 'رمز التحقق', newPassword: 'كلمة المرور الجديدة', codeSent: 'أرسلنا الرمز. في بيئة التطوير يظهر في سجل الخادم.',
+      resetDone: 'تم تحديث كلمة المرور — سجّل الدخول من جديد', demo: 'حساب تجريبي', useDemo: 'استخدم الحساب التجريبي', or: 'أو',
+      continueWithGoogle: 'المتابعة عبر Google', continueWithApple: 'المتابعة عبر Apple', socialUnavailable: 'تسجيل الدخول عبر الحسابات الاجتماعية غير مفعّل على هذا الخادم بعد',
+      passwordHint: '8 أحرف على الأقل تتضمن حرفاً ورقماً', terms: 'بالمتابعة فإنك توافق على شروط الخدمة وسياسة الخصوصية.',
+      verifyPhone: 'تأكيد رقم الجوال', verifyHelp: 'أدخل الرمز المكوّن من 6 أرقام المرسل إلى {{target}}', verify: 'تأكيد', verified: 'تم التأكيد',
+    },
+    ride: {
+      status: {
+        REQUESTED: 'تم الطلب', SEARCHING: 'نبحث عن سائق', ACCEPTED: 'تم تعيين سائق', DRIVER_ARRIVING: 'السائق في الطريق',
+        ARRIVED: 'وصل السائق', IN_PROGRESS: 'الرحلة جارية', COMPLETED: 'مكتملة', PAYMENT_PENDING: 'بانتظار الدفع',
+        PAYMENT_COMPLETED: 'مكتملة', CANCELLED: 'ملغاة', EXPIRED: 'انتهت المهلة', NO_DRIVER_AVAILABLE: 'لا يوجد سائق متاح',
+      },
+      payment: { CASH: 'نقداً', CARD: 'بطاقة', WALLET: 'المحفظة' },
+      pickup: 'نقطة الانطلاق', dropoff: 'الوجهة', scheduled: 'مجدولة',
+    },
+    errors: {
+      generic: 'حدث خطأ ما. يرجى المحاولة مرة أخرى.', network: 'يبدو أنك غير متصل بالإنترنت.', notFound: 'الصفحة غير موجودة',
+      notFoundHelp: 'الصفحة التي تبحث عنها غير موجودة أو تم نقلها.', goHome: 'العودة للرئيسية', required: 'مطلوب',
+    },
+    pwa: { install: 'تثبيت التطبيق', installHelp: 'أضف مسار إلى شاشتك الرئيسية لتجربة أسرع بملء الشاشة.' },
+    time: { min: 'د', now: 'الآن' },
+  },
+};

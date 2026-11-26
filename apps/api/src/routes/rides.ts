@@ -23,6 +23,7 @@ import { cancelRide, collectRidePayment, createRide, loadRide, quoteRide, rateRi
 import { dispatch } from '../services/dispatch.service';
 import { checkCoupon, couponAmount, estimateEtaToPickup, surgeFor, toRule } from '../services/pricing.service';
 import { emitToAdmins, emitToRide } from '../realtime/io';
+import { driverLocations } from '../services/driver-locations';
 import { copy, notify } from '../services/notifications';
 
 export const ridesRouter = Router();
@@ -68,6 +69,20 @@ ridesRouter.post('/estimate', requireRole('PASSENGER'), validate(estimateSchema)
     route,
     options,
     coupon: couponCode ? { code: couponCode.toUpperCase(), valid: !!couponCheck?.valid, message: couponCheck?.message } : null,
+  });
+});
+
+/**
+ * Approximate positions of idle cars near a point, for the passenger map. Positions are
+ * jittered (~60 m) and anonymous so drivers can't be identified or tracked.
+ */
+const nearbySchema = z.object({ lat: z.coerce.number().min(-90).max(90), lng: z.coerce.number().min(-180).max(180) });
+ridesRouter.get('/nearby-cars', validate(nearbySchema, 'query'), async (req, res) => {
+  const { lat, lng } = q<z.infer<typeof nearbySchema>>(req);
+  const near = await driverLocations.findNearby(lat, lng, 6, null, 12);
+  const jitter = () => (Math.random() - 0.5) * 0.0011;
+  res.json({
+    items: near.map((d, i) => ({ id: `car-${i}`, lat: d.lat + jitter(), lng: d.lng + jitter(), heading: Math.round(Math.random() * 360), category: d.category })),
   });
 });
 
