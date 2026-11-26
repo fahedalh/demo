@@ -43,16 +43,23 @@ export function HomePage() {
         .then((r) => r.items),
     staleTime: Infinity,
   });
+  const { data: config } = useQuery({
+    queryKey: ['config'],
+    queryFn: () => api.get<{ serviceAnywhere?: boolean; freeCancellationSeconds: number }>('/catalog/config'),
+    staleTime: Infinity,
+  });
   const located = useRef(false);
   useEffect(() => {
-    if (geo.status === 'locating' || !areas || located.current) return;
+    if (geo.status === 'locating' || !areas || !config || located.current) return;
     located.current = true;
-    const inArea =
+    // Use the device location when we serve it (or everywhere in demo "service anywhere" mode).
+    const usable =
       geo.status === 'ok' &&
-      areas.some((a) => haversine(geo, { lat: a.centerLat, lng: a.centerLng }) <= a.radiusKm * 1000);
-    const pos = inArea ? { lat: geo.lat, lng: geo.lng } : { lat: defaultCenter[0], lng: defaultCenter[1] };
+      (config.serviceAnywhere ||
+        areas.some((a) => haversine(geo, { lat: a.centerLat, lng: a.centerLng }) <= a.radiusKm * 1000));
+    const pos = usable ? { lat: geo.lat, lng: geo.lng } : { lat: defaultCenter[0], lng: defaultCenter[1] };
     setUserPos(pos);
-    if (!inArea) toast.info(t('book.locationDenied'));
+    if (!usable) toast.info(geo.status === 'ok' ? t('book.outsideArea') : t('book.locationDenied'));
     if (!useBooking.getState().pickup) {
       void api
         .get<{ name: string; address: string }>(
@@ -66,7 +73,7 @@ export function HomePage() {
         );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [geo.status, areas]);
+  }, [geo.status, areas, config]);
 
   // Keep the failure card visible after the search ends without a driver.
   useEffect(() => {

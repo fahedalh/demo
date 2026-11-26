@@ -5,6 +5,7 @@ export * from './lib/socket';
 export * from './lib/theme';
 export * from './lib/format';
 export * from './i18n';
+export * from './i18n/messages';
 export * from './components/primitives';
 export * from './components/overlays';
 export * from './components/form';

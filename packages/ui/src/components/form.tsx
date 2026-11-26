@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { cn } from '../lib/cn';
 import { Label } from './primitives';
+import { localizeMessage } from '../i18n/messages';
 
 /** Label + control + inline error, wired for react-hook-form. */
 export function Field({
@@ -24,7 +25,7 @@ export function Field({
       {children}
       {error ? (
         <p role="alert" className="mt-1.5 text-sm text-danger">
-          {error}
+          {localizeMessage(error)}
         </p>
       ) : hint ? (
         <p className="mt-1.5 text-xs text-muted">{hint}</p>
@@ -40,7 +41,7 @@ export function FormError({ message }: { message?: string | null }) {
       role="alert"
       className="rounded-xl border border-danger/30 bg-danger/8 px-4 py-3 text-sm font-medium text-danger"
     >
-      {message}
+      {localizeMessage(message)}
     </div>
   );
 }

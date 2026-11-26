@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -47,12 +47,25 @@ export function DrivePage() {
   const ride = active.data && ENGAGED.includes(active.data.status) ? active.data : null;
   const online = dash.data?.isOnline ?? profile.data?.profile.isOnline ?? false;
 
-  // Seed the simulated position from the last known location.
+  // Starting position: the phone's real GPS fix when available (the demo simulation then drives
+  // from there), otherwise the last known location, otherwise the city centre.
+  const seeded = useRef(false);
   useEffect(() => {
-    if (!loc.pos && profile.data) {
-      const last = profile.data.profile.lastLocation;
-      useLocation.setState({ pos: { lat: last?.lat ?? center[0], lng: last?.lng ?? center[1], heading: 0 } });
-    }
+    if (seeded.current || loc.pos || !profile.data) return;
+    seeded.current = true;
+    const last = profile.data.profile.lastLocation;
+    const fallback = () => {
+      if (!useLocation.getState().pos)
+        useLocation.setState({
+          pos: { lat: last?.lat ?? center[0], lng: last?.lng ?? center[1], heading: 0 },
+        });
+    };
+    if (!('geolocation' in navigator)) return fallback();
+    navigator.geolocation.getCurrentPosition(
+      (p) => useLocation.getState().setPos({ lat: p.coords.latitude, lng: p.coords.longitude }),
+      fallback,
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 60_000 },
+    );
   }, [profile.data, loc.pos, center]);
 
   // Restore a pending offer after a reload.
@@ -350,7 +363,9 @@ function SimulationCard() {
             onChange={(e) => setSpeed(Number(e.target.value))}
             className="flex-1 accent-[#06C167]"
           />
-          <span className="tabular w-16 text-end font-medium">{Math.round(simSpeed * 3.6)} km/h</span>
+          <span className="tabular w-16 text-end font-medium">
+            {Math.round(simSpeed * 3.6)} {t('sim.kmh')}
+          </span>
         </label>
       )}
       {!simEnabled && gpsError && (
@@ -358,7 +373,7 @@ function SimulationCard() {
           {t('status.locationNeeded')} ({gpsError})
         </p>
       )}
-      {!simEnabled && source === 'gps' && <p className="mt-2 text-xs text-accent-600">GPS ✓</p>}
+      {!simEnabled && source === 'gps' && <p className="mt-2 text-xs text-accent-600">{t('sim.gpsOk')} ✓</p>}
     </div>
   );
 }

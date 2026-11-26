@@ -61,5 +61,6 @@ catalogRouter.get('/config', async (_req, res) => {
     supportEmail: s.supportEmail,
     maintenanceMode: s.maintenanceMode,
     freeCancellationSeconds: s.freeCancellationSeconds,
+    serviceAnywhere: env.SERVICE_ANYWHERE,
   });
 });

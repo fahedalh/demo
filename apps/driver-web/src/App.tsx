@@ -1,7 +1,8 @@
+import { useTranslation } from 'react-i18next';
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
-import { api, AuthScreen, FullScreenLoader, Providers, useAuth, useBootstrapSession } from '@masar/ui';
+import { api, i18n, AuthScreen, FullScreenLoader, Providers, useAuth, useBootstrapSession } from '@masar/ui';
 import { Shell } from './Shell';
 import { DriveAside } from './components/DriveAside';
 import { DrivePage } from './pages/Drive';
@@ -35,6 +36,7 @@ function Approved() {
 }
 
 function Gate() {
+  useTranslation(); // re-render demo labels when the language changes
   const ready = useBootstrapSession();
   const user = useAuth((s) => s.user);
   const profile = useDriverProfile();
@@ -45,8 +47,8 @@ function Gate() {
         role="DRIVER"
         suffix="Driver"
         demo={[
-          { identifier: 'driver@masar.demo', password: 'Driver123!', label: 'Omar · approved driver' },
-          { identifier: 'newdriver@masar.demo', password: 'Driver123!', label: 'Bilal · pending review' },
+          { identifier: 'driver@masar.demo', password: 'Driver123!', label: i18n.t('demo.driver') },
+          { identifier: 'newdriver@masar.demo', password: 'Driver123!', label: i18n.t('demo.pending') },
         ]}
         aside={<DriveAside />}
       />

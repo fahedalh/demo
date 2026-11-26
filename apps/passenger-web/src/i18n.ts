@@ -23,6 +23,8 @@ export const passengerStrings = {
       currentLocation: 'Current location',
       locating: 'Finding your location…',
       locationDenied: 'Location access is off — we placed you in central Dubai. Drag the map to adjust.',
+      outsideArea:
+        "You're outside our service area — showing central Dubai. Drag the map to choose a pickup.",
       saved: 'Saved places',
       setOnMap: 'Choose on map',
       confirmPin: 'Confirm location',
@@ -87,6 +89,10 @@ export const passengerStrings = {
       call999: 'Call 999',
       shared: 'Trip link copied',
       vehicle: '{{color}} {{make}} {{model}}',
+      quick1: 'On my way',
+      quick2: "I'm here",
+      quick3: 'Running 2 min late',
+      quick4: 'Please call me',
       trips: '{{count}} trips',
     },
     done: {
@@ -259,6 +265,7 @@ export const passengerStrings = {
       currentLocation: 'موقعي الحالي',
       locating: 'جارٍ تحديد موقعك…',
       locationDenied: 'خدمة الموقع غير مفعّلة — حددنا موقعك في وسط دبي. حرّك الخريطة لتعديله.',
+      outsideArea: 'موقعك خارج نطاق خدمتنا — نعرض وسط دبي. حرّك الخريطة لاختيار نقطة الانطلاق.',
       saved: 'الأماكن المحفوظة',
       setOnMap: 'تحديد على الخريطة',
       confirmPin: 'تأكيد الموقع',
@@ -322,6 +329,10 @@ export const passengerStrings = {
       call999: 'اتصل بـ 999',
       shared: 'تم نسخ رابط الرحلة',
       vehicle: '{{make}} {{model}} {{color}}',
+      quick1: 'أنا في الطريق',
+      quick2: 'أنا هنا',
+      quick3: 'سأتأخر دقيقتين',
+      quick4: 'اتصل بي من فضلك',
       trips: '{{count}} رحلة',
     },
     done: {

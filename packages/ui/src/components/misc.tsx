@@ -18,6 +18,8 @@ import type { RideStatus } from '@masar/shared';
 import { cn } from '../lib/cn';
 import { useTheme, type Theme } from '../lib/theme';
 import { useSocketStatus } from '../lib/socket';
+import { i18n } from '../i18n';
+import { localizeMessage } from '../i18n/messages';
 import { Badge, Button } from './primitives';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './overlays';
 
@@ -203,7 +205,7 @@ export function ErrorState({ message, onRetry }: { message?: string; onRetry?: (
         <AlertTriangle className="size-5 text-danger" />
       </div>
       <p className="font-semibold">{t('state.error')}</p>
-      <p className="mt-1 text-sm text-muted">{message ?? t('errors.generic')}</p>
+      <p className="mt-1 text-sm text-muted">{message ? localizeMessage(message) : t('errors.generic')}</p>
       {onRetry && (
         <Button variant="outline" size="sm" className="mt-4" onClick={onRetry}>
           {t('actions.retry')}
@@ -357,10 +359,10 @@ export class ErrorBoundary extends React.Component<{ children: React.ReactNode }
         <div className="grid min-h-full place-items-center p-6">
           <div className="max-w-sm text-center">
             <AlertTriangle className="mx-auto mb-3 size-8 text-danger" />
-            <h1 className="text-xl font-bold">Something went wrong</h1>
+            <h1 className="text-xl font-bold">{i18n.t('state.error')}</h1>
             <p className="mt-2 text-sm text-muted">{this.state.error.message}</p>
             <Button className="mt-5" onClick={() => location.reload()}>
-              Reload
+              {i18n.t('actions.reload')}
             </Button>
           </div>
         </div>

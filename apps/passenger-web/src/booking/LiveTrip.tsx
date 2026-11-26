@@ -325,7 +325,7 @@ export function ChatDialog({
     },
     onError: (e) => toast.error(e instanceof ApiError ? e.message : t('errors.generic')),
   });
-  const quick = ['On my way', "I'm here", 'Running 2 min late', 'Please call me'];
+  const quick = [t('trip.quick1'), t('trip.quick2'), t('trip.quick3'), t('trip.quick4')];
   const other = me.id === ride.passenger?.id ? ride.driver : ride.passenger;
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

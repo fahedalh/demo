@@ -223,16 +223,20 @@ function TicketDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o:
           <Select value={category} onChange={(e) => setCategory(e.target.value)}>
             {['RIDE_ISSUE', 'PAYMENT', 'ACCOUNT', 'SAFETY', 'DRIVER_ONBOARDING', 'OTHER'].map((c) => (
               <option key={c} value={c}>
-                {c.replace(/_/g, ' ').toLowerCase()}
+                {t(`report.${c}`)}
               </option>
             ))}
           </Select>
-          <Input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Subject" />
+          <Input
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
+            placeholder={t('report.subject')}
+          />
           <Textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={4}
-            placeholder="Describe the issue (10+ characters)"
+            placeholder={t('report.describe')}
           />
           <Button
             block

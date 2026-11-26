@@ -1,7 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { AuthScreen, FullScreenLoader, Providers, useAuth, useBootstrapSession } from '@masar/ui';
+import { AuthScreen, i18n, FullScreenLoader, Providers, useAuth, useBootstrapSession } from '@masar/ui';
 import { Layout } from './Layout';
 
 const OverviewPage = lazy(() => import('./pages/Overview').then((m) => ({ default: m.OverviewPage })));
@@ -44,6 +44,7 @@ function Aside() {
 }
 
 function Gate() {
+  useTranslation(); // re-render demo labels when the language changes
   const ready = useBootstrapSession();
   const user = useAuth((s) => s.user);
   if (!ready && !user) return <FullScreenLoader />;
@@ -54,9 +55,9 @@ function Gate() {
         suffix="Console"
         allowRegister={false}
         demo={[
-          { identifier: 'admin@masar.demo', password: 'Admin123!', label: 'Super admin' },
-          { identifier: 'finance@masar.demo', password: 'Admin123!', label: 'Finance' },
-          { identifier: 'support@masar.demo', password: 'Admin123!', label: 'Support' },
+          { identifier: 'admin@masar.demo', password: 'Admin123!', label: i18n.t('demo.superAdmin') },
+          { identifier: 'finance@masar.demo', password: 'Admin123!', label: i18n.t('demo.finance') },
+          { identifier: 'support@masar.demo', password: 'Admin123!', label: i18n.t('demo.support') },
         ]}
         aside={<Aside />}
       />

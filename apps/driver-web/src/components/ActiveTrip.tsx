@@ -327,7 +327,7 @@ function DriverChat({
       add(m);
     },
   });
-  const quick = ["I'm here", 'Arriving in 2 minutes', 'Traffic is heavy', 'Please come to the main entrance'];
+  const quick = [t('trip.quick1'), t('trip.quick2'), t('trip.quick3'), t('trip.quick4')];
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent title={ride.passenger?.firstName}>
@@ -405,11 +405,11 @@ function ReportDialog({
       <DialogContent title={t('trip.report')}>
         <div className="space-y-3">
           <Select value={category} onChange={(e) => setCategory(e.target.value)}>
-            <option value="RIDE_ISSUE">Trip issue</option>
-            <option value="SAFETY">Safety</option>
-            <option value="LOST_ITEM">Lost item</option>
-            <option value="PAYMENT">Payment</option>
-            <option value="OTHER">Other</option>
+            <option value="RIDE_ISSUE">{t('report.RIDE_ISSUE')}</option>
+            <option value="SAFETY">{t('report.SAFETY')}</option>
+            <option value="LOST_ITEM">{t('report.LOST_ITEM')}</option>
+            <option value="PAYMENT">{t('report.PAYMENT')}</option>
+            <option value="OTHER">{t('report.OTHER')}</option>
           </Select>
           <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={4} />
           <Button

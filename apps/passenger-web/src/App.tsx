@@ -1,6 +1,7 @@
+import { useTranslation } from 'react-i18next';
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router';
-import { AuthScreen, FullScreenLoader, Providers, useAuth, useBootstrapSession } from '@masar/ui';
+import { AuthScreen, i18n, FullScreenLoader, Providers, useAuth, useBootstrapSession } from '@masar/ui';
 import { Shell } from './Shell';
 import { AuthAside } from './pages/AuthAside';
 import { HomePage } from './pages/Home';
@@ -16,6 +17,7 @@ const NotificationsPage = lazy(() =>
 );
 
 function Gate() {
+  useTranslation(); // re-render demo labels when the language changes
   const ready = useBootstrapSession();
   const user = useAuth((s) => s.user);
   if (!ready && !user) return <FullScreenLoader />;
@@ -27,7 +29,7 @@ function Gate() {
           {
             identifier: 'passenger@masar.demo',
             password: 'Passenger123!',
-            label: 'Sara · passenger@masar.demo',
+            label: i18n.t('demo.rider'),
           },
         ]}
         aside={<AuthAside />}

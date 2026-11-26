@@ -11,6 +11,7 @@ import { prisma } from '../lib/prisma';
 import { unprocessable } from '../lib/errors';
 import { driverLocations } from './driver-locations';
 import { getSettings } from '../lib/settings';
+import { env } from '../config/env';
 
 export function toRule(p: PricingConfiguration, surgeMultiplier = 1): PricingRule {
   return {
@@ -38,7 +39,16 @@ export async function findServiceArea(point: LatLng): Promise<ServiceArea | null
       haversine(point, { lat: a.centerLat, lng: a.centerLng }) -
       haversine(point, { lat: b.centerLat, lng: b.centerLng }),
   );
-  return inside[0] ?? null;
+  if (inside[0]) return inside[0];
+  if (env.SERVICE_ANYWHERE && areas.length) {
+    // Demo mode: fall back to the nearest area's pricing so the app can be tested anywhere.
+    return [...areas].sort(
+      (a, b) =>
+        haversine(point, { lat: a.centerLat, lng: a.centerLng }) -
+        haversine(point, { lat: b.centerLat, lng: b.centerLng }),
+    )[0];
+  }
+  return null;
 }
 
 export async function requireServiceArea(

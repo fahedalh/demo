@@ -4,6 +4,7 @@
  */
 import type { AuthResponse } from '@masar/shared';
 import { useAuth, type ClientApp } from './auth-store';
+import { localizeMessage } from '../i18n/messages';
 
 let APP: ClientApp = 'passenger';
 const BASE = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '') ?? '';
@@ -21,7 +22,8 @@ export class ApiError extends Error {
     message: string,
     public details?: unknown,
   ) {
-    super(message);
+    // Server messages are English; show them in the user's language.
+    super(localizeMessage(message));
   }
 }
 

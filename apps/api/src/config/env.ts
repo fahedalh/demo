@@ -29,6 +29,14 @@ const schema = z.object({
   LOG_LEVEL: z.string().default('info'),
   /** Test/dev only: run dispatch timers faster. */
   DISPATCH_TIME_SCALE: z.coerce.number().default(1),
+  /**
+   * Demo/testing: serve rides at any location, priced like the nearest service area.
+   * Keep false in production — real operations are limited to configured service areas.
+   */
+  SERVICE_ANYWHERE: z
+    .string()
+    .default('false')
+    .transform((v) => v === 'true'),
 });
 
 const parsed = schema.safeParse(process.env);
