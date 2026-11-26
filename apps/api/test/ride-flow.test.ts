@@ -183,7 +183,9 @@ describe('complete ride workflow', () => {
   });
 
   it('completes the trip and charges the card', async () => {
+    await sleep(600); // stay clear of the 2-updates/second location throttle
     for (const [lat, lng] of [
+      [25.1985, 55.2796],
       [25.17, 55.24],
       [25.13, 55.2],
       [25.09, 55.16],
@@ -197,6 +199,8 @@ describe('complete ride workflow', () => {
     expect(res.status).toBe(200);
     const ride = await doneP;
     expect(ride.finalFare).toBeGreaterThan(0);
+    // Following the quoted route keeps the upfront price.
+    expect(ride.finalFare).toBe(ride.estimatedFare);
     expect(ride.paymentStatus).toBe('SUCCEEDED');
     expect(res.body.ride.driverEarning.net).toBeGreaterThan(0);
     expect(res.body.ride.driverEarning.commission).toBe(Math.round(res.body.ride.driverEarning.gross * 0.2));

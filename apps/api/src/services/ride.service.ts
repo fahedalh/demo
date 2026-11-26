@@ -294,8 +294,8 @@ export async function startTrip(rideId: string, driverId: string, pin?: string) 
 }
 
 /**
- * Upfront pricing: the passenger pays the quoted fare unless the driven distance differs from
- * the estimate by more than 25% (detours, changed destination), in which case it is re-metered.
+ * Upfront pricing: the passenger pays the quoted fare unless the GPS trail differs from the quoted
+ * route by more than 25% (detours, changed destination, ended early), in which case it is re-metered.
  */
 async function computeFinalFare(ride: Ride) {
   const cfg = await prisma.pricingConfiguration.findFirst({
@@ -307,30 +307,34 @@ async function computeFinalFare(ride: Ride) {
     orderBy: { recordedAt: 'asc' },
     select: { lat: true, lng: true },
   });
-  const driven = trail.length > 1 ? Math.round(pathLength(trail)) : 0;
+  // The trip starts at the pickup point: anchoring the trail there keeps a dropped or throttled
+  // first GPS ping from shortening the measured distance.
+  if (trail.length) trail.unshift({ lat: ride.pickupLat, lng: ride.pickupLng });
+  const trailLength = trail.length > 1 ? pathLength(trail) : 0;
   const durationS = ride.startedAt
     ? Math.round((Date.now() - ride.startedAt.getTime()) / 1000)
     : ride.estimatedDurationS;
-  const deviates = driven > 0 && Math.abs(driven - ride.estimatedDistanceM) / ride.estimatedDistanceM > 0.25;
+  // Compare the GPS trail with the quoted route's own polyline, not with the provider's billed
+  // distance: providers may bill a different length than the drawn line (the offline provider
+  // adds a road factor), so comparing trail vs. billed distance would flag honest trips.
+  const geometry = (ride.routeGeometry as [number, number][] | null) ?? null;
+  const routeLength =
+    geometry && geometry.length > 1 ? pathLength(geometry.map(([lat, lng]) => ({ lat, lng }))) : 0;
+  const scale = routeLength > 0 ? ride.estimatedDistanceM / routeLength : 1;
+  const deviates =
+    trailLength > 0 && routeLength > 0 && Math.abs(trailLength - routeLength) / routeLength > 0.25;
+  // When re-metering, convert the trail into billed distance with the same provider scale.
+  const driven = Math.round(trailLength * scale);
   const rule = toRule(cfg, ride.surgeMultiplier);
-  const metered = deviates
-    ? calculateFare(rule, { distanceMeters: driven, durationSeconds: durationS })
-    : calculateFare(rule, {
-        distanceMeters: ride.estimatedDistanceM,
-        durationSeconds: ride.estimatedDurationS,
-      });
+  const input = deviates
+    ? { distanceMeters: driven, durationSeconds: durationS }
+    : { distanceMeters: ride.estimatedDistanceM, durationSeconds: ride.estimatedDurationS };
   let discount = 0;
   if (ride.couponId) {
     const coupon = await prisma.coupon.findUnique({ where: { id: ride.couponId } });
-    discount = couponAmount(coupon, metered.total);
+    discount = couponAmount(coupon, calculateFare(rule, input).total);
   }
-  const final = calculateFare(
-    rule,
-    deviates
-      ? { distanceMeters: driven, durationSeconds: durationS }
-      : { distanceMeters: ride.estimatedDistanceM, durationSeconds: ride.estimatedDurationS },
-    discount,
-  );
+  const final = calculateFare(rule, input, discount);
   return { final, driven: driven || ride.estimatedDistanceM, durationS, repriced: deviates };
 }
 
