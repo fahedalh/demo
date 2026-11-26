@@ -120,3 +120,4 @@ variables; see `server/.env.example`.
 | 5 | Lock + unique slot key | Defence in depth against race conditions without requiring Mongo transactions |
 | 6 | Provider adapters for payments/messaging/AI | No hard-coded vendors or credentials |
 | 7 | CommonJS server build, `shared/` compiled alongside | No runtime path-alias loaders in production |
+| 8 | Industry themes are presets (data), resolved business → category → default | Industry-specific look without per-industry code; admins add/assign presets |

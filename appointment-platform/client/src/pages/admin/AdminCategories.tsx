@@ -3,7 +3,7 @@ import { ArrowDown, ArrowUp, Layers, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { BOOKING_FLOW_STEPS, type CustomField } from '@bookly/shared';
+import { BOOKING_FLOW_STEPS, THEME_PRESETS, type CustomField, type ThemePreset } from '@bookly/shared';
 import { ConfirmDialog, EmptyState, Field, PageHeader, QueryView } from '@/components/common';
 import { CategoryIcon, ICON_NAMES } from '@/components/common/CategoryIcon';
 import { Button } from '@/components/ui/button';
@@ -21,7 +21,7 @@ const empty: Form = {
   slug: '', name: { en: '', ar: '' }, description: { en: '', ar: '' }, icon: 'Sparkles', color: '#6366f1',
   terminology: { staff: { en: 'Staff', ar: 'الموظف' }, service: { en: 'Service', ar: 'الخدمة' }, resource: { en: 'Resource', ar: 'المورد' } },
   bookingFlow: { steps: ['service', 'staff', 'datetime', 'details', 'payment'], requireStaff: false, resourceFirst: false, sessionModes: ['in_person'], customFields: [] },
-  subcategories: [], isActive: true, sortOrder: 0,
+  subcategories: [], theme: 'default', isActive: true, sortOrder: 0,
 };
 
 export function AdminCategories() {
@@ -93,7 +93,7 @@ export function AdminCategories() {
                   <Button variant="ghost" size="icon-sm" onClick={() => setDel(c)} aria-label={tc('actions.delete')}><Trash2 /></Button>
                 </div>
                 <div className="mt-4 flex flex-wrap gap-1.5">{c.bookingFlow.steps.map((s, i) => <Badge key={s} tone="primary">{i + 1}. {tc(`booking.steps.${s}`)}</Badge>)}</div>
-                <p className="mt-3 text-xs text-muted-foreground">{loc(c.terminology.staff)} · {loc(c.terminology.service)} · {c.bookingFlow.customFields.length} {t('services.customFields').toLowerCase()}</p>
+                <p className="mt-3 text-xs text-muted-foreground">{t(`settings.themes.${c.theme ?? 'default'}`)} · {loc(c.terminology.staff)} · {loc(c.terminology.service)} · {c.bookingFlow.customFields.length} {t('services.customFields').toLowerCase()}</p>
               </Card>
             ))}
           </div>
@@ -113,6 +113,11 @@ export function AdminCategories() {
               <Field label={t('admin.descEn')} htmlFor="c-den"><Input id="c-den" value={f.description?.en ?? ''} onChange={(e) => setF({ ...f, description: { ...f.description!, en: e.target.value } })} /></Field>
               <Field label={t('admin.descAr')} htmlFor="c-dar"><Input id="c-dar" dir="rtl" value={f.description?.ar ?? ''} onChange={(e) => setF({ ...f, description: { en: f.description?.en ?? '', ar: e.target.value } })} /></Field>
               <Field label={tc('common.color')}><ColorInput value={f.color} onChange={(v) => setF({ ...f, color: v })} /></Field>
+              <Field label={t('admin.defaultTheme')} hint={t('settings.themeHint')} htmlFor="c-theme">
+                <NativeSelect id="c-theme" value={f.theme ?? 'default'} onChange={(e) => setF({ ...f, theme: e.target.value as ThemePreset })}>
+                  {THEME_PRESETS.map((p) => <option key={p} value={p}>{t(`settings.themes.${p}`)}</option>)}
+                </NativeSelect>
+              </Field>
               <Field label="Sort" htmlFor="c-sort"><Input id="c-sort" type="number" value={f.sortOrder} onChange={(e) => setF({ ...f, sortOrder: Number(e.target.value) })} /></Field>
             </div>
 

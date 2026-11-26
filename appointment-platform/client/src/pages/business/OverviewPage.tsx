@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { EmptyState, PageHeader, QueryView, STATUS_COLOR, StatCard, StatusBadge } from '@/components/common';
+import { Delta, EmptyState, PageHeader, QueryView, STATUS_COLOR, StatCard, StatusBadge } from '@/components/common';
 import { Button } from '@/components/ui/button';
 import { NativeSelect } from '@/components/ui/input';
 import { Badge, Card, CardContent, CardHeader, CardTitle, Skeleton } from '@/components/ui/misc';
@@ -20,6 +20,7 @@ import { fmtShortDate, fmtTime, money, pct } from '@/utils/format';
 interface Analytics {
   currency: string;
   kpis: { bookings: number; revenue: number; bookedValue: number; newCustomers: number; cancellationRate: number; noShowRate: number; rating: number; reviews: number; pending: number };
+  previous?: { bookings: number; revenue: number; newCustomers: number };
   status: Record<string, number>;
   series: Array<{ date: string; bookings: number; revenue: number }>;
   topServices: Array<{ name: string; bookings: number; value: number }>;
@@ -61,9 +62,9 @@ export function OverviewPage() {
               </Card>
             )}
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <StatCard label={t('overview.kpiBookings')} value={d.kpis.bookings} icon={<CalendarCheck />} />
-              {can('payments:read') && <StatCard label={t('overview.kpiRevenue')} value={money(d.kpis.revenue, d.currency)} hint={`${money(d.kpis.bookedValue, d.currency)} booked`} icon={<Coins />} tone="accent" />}
-              <StatCard label={t('overview.kpiCustomers')} value={d.kpis.newCustomers} icon={<UserPlus />} tone="amber" />
+              <StatCard label={t('overview.kpiBookings')} value={d.kpis.bookings} hint={<Delta current={d.kpis.bookings} previous={d.previous?.bookings} />} icon={<CalendarCheck />} />
+              {can('payments:read') && <StatCard label={t('overview.kpiRevenue')} value={money(d.kpis.revenue, d.currency)} hint={<span className="flex flex-wrap items-center gap-1.5"><Delta current={d.kpis.revenue} previous={d.previous?.revenue} />{money(d.kpis.bookedValue, d.currency)} booked</span>} icon={<Coins />} tone="accent" />}
+              <StatCard label={t('overview.kpiCustomers')} value={d.kpis.newCustomers} hint={<Delta current={d.kpis.newCustomers} previous={d.previous?.newCustomers} />} icon={<UserPlus />} tone="amber" />
               <StatCard label={t('overview.kpiNoShow')} value={pct(d.kpis.noShowRate)} hint={`${t('overview.kpiCancel')}: ${pct(d.kpis.cancellationRate)}`} icon={<UserX />} tone="rose" />
             </div>
 

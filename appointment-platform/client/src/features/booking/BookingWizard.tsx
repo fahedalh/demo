@@ -42,16 +42,18 @@ interface Details {
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export function BookingWizard({ data, initialService, onDone }: { data: PublicBusinessPayload; initialService?: string; onDone?: () => void }) {
+export function BookingWizard({ data, initialService, initialStaff, onDone }: { data: PublicBusinessPayload; initialService?: string; initialStaff?: string; onDone?: () => void }) {
   const { t } = useTranslation();
   const loc = useLocalized();
   const { user } = useAuth();
-  const { business, services, staff } = data;
+  const { business, staff } = data;
+  // Starting from a staff member (e.g. "Book" on a doctor card) limits services to what they offer.
+  const services = useMemo(() => (initialStaff ? data.services.filter((s) => s.staff.includes(initialStaff)) : data.services), [data.services, initialStaff]);
   const category = business.category;
   const settings = business.settings;
 
   const [service, setService] = useState<Service | null>(() => services.find((s) => s._id === initialService) ?? null);
-  const [staffId, setStaffId] = useState<string | undefined>();
+  const [staffId, setStaffId] = useState<string | undefined>(initialStaff);
   const [slot, setSlot] = useState<Slot | null>(null);
   const [noSlotsDate, setNoSlotsDate] = useState<string | null>(null);
   const [details, setDetails] = useState<Details>({
@@ -82,12 +84,12 @@ export function BookingWizard({ data, initialService, onDone }: { data: PublicBu
     const configured = (category?.bookingFlow?.steps ?? ['service', 'staff', 'datetime', 'details', 'payment']) as string[];
     return (['service', 'staff', 'datetime', 'details', 'payment'] as Step[]).filter((s) => {
       if (s === 'service' || s === 'datetime' || s === 'details') return true;
-      if (s === 'staff') return configured.includes('staff') && settings.allowStaffSelection && serviceStaff.length > 1;
+      if (s === 'staff') return !initialStaff && configured.includes('staff') && settings.allowStaffSelection && serviceStaff.length > 1;
       if (s === 'payment') return showPayment;
       return false;
     });
-  }, [category, settings.allowStaffSelection, serviceStaff.length, showPayment]);
-  const [step, setStep] = useState<Step>(initialService ? (steps[1] ?? 'datetime') : 'service');
+  }, [category, settings.allowStaffSelection, serviceStaff.length, showPayment, initialStaff]);
+  const [step, setStep] = useState<Step>(initialService && (initialStaff || !steps.includes('staff')) ? 'datetime' : initialService ? (steps[1] ?? 'datetime') : 'service');
   const idx = steps.indexOf(step);
   const go = (s: Step) => setStep(s);
   const next = () => go(steps[Math.min(idx + 1, steps.length - 1)]);
@@ -221,13 +223,13 @@ export function BookingWizard({ data, initialService, onDone }: { data: PublicBu
                   key={s._id}
                   onClick={() => {
                     setService(s);
-                    setStaffId(undefined);
+                    if (!initialStaff) setStaffId(undefined);
                     setSlot(null);
                     setDetails((d) => ({ ...d, mode: s.sessionModes[0] ?? 'in_person', attendees: 1 }));
                     // Decide from the chosen service, not from `steps` (computed before it was selected).
                     const flowHasStaff = (category?.bookingFlow?.steps ?? ['staff']).includes('staff');
                     const choosable = staff.filter((x) => s.staff.includes(x._id)).length > 1;
-                    go(flowHasStaff && settings.allowStaffSelection && choosable ? 'staff' : 'datetime');
+                    go(!initialStaff && flowHasStaff && settings.allowStaffSelection && choosable ? 'staff' : 'datetime');
                   }}
                   className={cn('flex w-full items-center gap-4 rounded-2xl border p-4 text-start transition-all hover:border-brand hover:shadow-soft', service?._id === s._id && 'border-brand bg-brand/5')}
                 >

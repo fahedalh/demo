@@ -39,7 +39,7 @@ const pick = <T,>(a: T[]) => a[Math.floor(rnd() * a.length)];
 
 const CATEGORIES = [
   {
-    slug: 'healthcare', icon: 'Stethoscope', color: '#0ea5e9', sortOrder: 1,
+    slug: 'healthcare', icon: 'Stethoscope', color: '#0ea5e9', sortOrder: 1, theme: 'clinical',
     name: L('Medical & Healthcare', 'الطب والرعاية الصحية'),
     description: L('Doctors, clinics, dentists, physiotherapy and labs', 'أطباء، عيادات، أسنان، علاج طبيعي ومختبرات'),
     terminology: { staff: L('Doctor', 'الطبيب'), service: L('Consultation', 'الاستشارة'), resource: L('Room', 'الغرفة') },
@@ -51,7 +51,7 @@ const CATEGORIES = [
     subcategories: [L('Doctors', 'أطباء'), L('Dentists', 'أطباء أسنان'), L('Physiotherapy', 'علاج طبيعي'), L('Laboratories', 'مختبرات')],
   },
   {
-    slug: 'beauty', icon: 'Scissors', color: '#ec4899', sortOrder: 2,
+    slug: 'beauty', icon: 'Scissors', color: '#ec4899', sortOrder: 2, theme: 'luxe',
     name: L('Beauty & Personal Care', 'التجميل والعناية الشخصية'),
     description: L('Salons, barbershops, spas and massage', 'صالونات، حلاقة، سبا ومساج'),
     terminology: { staff: L('Stylist', 'الأخصائية'), service: L('Treatment', 'الخدمة'), resource: L('Chair', 'الكرسي') },
@@ -59,7 +59,7 @@ const CATEGORIES = [
     subcategories: [L('Hair salons', 'صالونات شعر'), L('Barbershops', 'حلاقة'), L('Spas', 'سبا')],
   },
   {
-    slug: 'education', icon: 'GraduationCap', color: '#8b5cf6', sortOrder: 3,
+    slug: 'education', icon: 'GraduationCap', color: '#8b5cf6', sortOrder: 3, theme: 'academic',
     name: L('Education & Training', 'التعليم والتدريب'),
     description: L('Tutors, training centers, workshops', 'مدرسون، مراكز تدريب وورش عمل'),
     terminology: { staff: L('Tutor', 'المدرّس'), service: L('Session', 'الحصة'), resource: L('Classroom', 'القاعة') },
@@ -69,7 +69,7 @@ const CATEGORIES = [
     subcategories: [L('Private tutors', 'دروس خصوصية'), L('Workshops', 'ورش عمل')],
   },
   {
-    slug: 'professional', icon: 'Briefcase', color: '#0f766e', sortOrder: 4,
+    slug: 'professional', icon: 'Briefcase', color: '#0f766e', sortOrder: 4, theme: 'professional',
     name: L('Professional Services', 'الخدمات المهنية'),
     description: L('Lawyers, consultants, accountants, advisors', 'محامون، مستشارون، محاسبون'),
     terminology: { staff: L('Advisor', 'المستشار'), service: L('Consultation', 'الاستشارة'), resource: L('Office', 'المكتب') },
@@ -80,7 +80,7 @@ const CATEGORIES = [
     subcategories: [L('Legal', 'قانوني'), L('Accounting', 'محاسبة'), L('Business advisory', 'استشارات أعمال')],
   },
   {
-    slug: 'automotive', icon: 'Car', color: '#f97316', sortOrder: 5,
+    slug: 'automotive', icon: 'Car', color: '#f97316', sortOrder: 5, theme: 'automotive',
     name: L('Automotive', 'السيارات'),
     description: L('Maintenance, inspection, detailing and repairs', 'صيانة، فحص، تلميع وإصلاح'),
     terminology: { staff: L('Technician', 'الفني'), service: L('Service', 'الخدمة'), resource: L('Service bay', 'منصة الخدمة') },
@@ -91,7 +91,7 @@ const CATEGORIES = [
     subcategories: [L('Maintenance', 'صيانة'), L('Detailing', 'تلميع')],
   },
   {
-    slug: 'hospitality', icon: 'Building2', color: '#eab308', sortOrder: 6,
+    slug: 'hospitality', icon: 'Building2', color: '#eab308', sortOrder: 6, theme: 'hospitality',
     name: L('Hospitality & Events', 'الضيافة والفعاليات'),
     description: L('Meeting rooms, venues, events and photo sessions', 'قاعات اجتماعات، أماكن فعاليات وجلسات تصوير'),
     terminology: { staff: L('Host', 'المضيف'), service: L('Reservation', 'الحجز'), resource: L('Room', 'القاعة') },
@@ -101,7 +101,7 @@ const CATEGORIES = [
     subcategories: [L('Meeting rooms', 'قاعات اجتماعات'), L('Venues', 'أماكن فعاليات'), L('Photography', 'تصوير')],
   },
   {
-    slug: 'government', icon: 'Landmark', color: '#64748b', sortOrder: 7,
+    slug: 'government', icon: 'Landmark', color: '#64748b', sortOrder: 7, theme: 'civic',
     name: L('Government & Public Services', 'الخدمات الحكومية والعامة'),
     description: L('Document processing and service-desk appointments', 'معاملات ومواعيد خدمة العملاء'),
     terminology: { staff: L('Officer', 'الموظف'), service: L('Transaction', 'المعاملة'), resource: L('Counter', 'الشباك') },
@@ -174,10 +174,10 @@ const BUSINESSES: BizSpec[] = [
   },
   {
     name: 'Lumière Hair & Beauty', category: 'beauty', owner: ['Maya Laurent', 'salon@bookly.dev'], featured: true,
-    tagline: 'Modern hair studio & nail bar in Downtown Dubai',
+    tagline: 'Quiet luxury for every strand',
     description: 'A calm, light-filled studio for cuts, colour, styling and nails. Our senior stylists tailor every look to you.',
     city: 'Dubai', country: 'United Arab Emirates', lat: 25.1972, lng: 55.2744, timezone: 'Asia/Dubai', currency: 'AED', locale: 'en',
-    hours: sched([1, 2, 3, 4, 5, 6, 0], [['10:00', '22:00']]), plan: 'starter', primaryColor: '#db2777', accentColor: '#f59e0b',
+    hours: sched([1, 2, 3, 4, 5, 6, 0], [['10:00', '22:00']]), plan: 'starter', primaryColor: '#b4746c', accentColor: '#e8cfc4',
     staff: [
       { name: 'Maya Laurent', title: 'Creative Director', color: '#db2777', login: 'maya@bookly.dev' },
       { name: 'Rami Aziz', title: 'Senior Stylist', color: '#7c3aed' },

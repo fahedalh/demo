@@ -50,7 +50,8 @@
     "setupServices": "Add your services",
     "setupStaff": "Add your team",
     "setupHours": "Set your opening hours",
-    "setupShare": "Share your booking page"
+    "setupShare": "Share your booking page",
+    "vsPrevious": "{{value}} vs previous period"
   },
   "calendar": {
     "title": "Calendar",
@@ -64,7 +65,14 @@
     "moved": "Booking moved",
     "more": "+{{count}} more",
     "closed": "Closed",
-    "newBooking": "New booking"
+    "newBooking": "New booking",
+    "kpiTotal": "Appointments",
+    "kpiCompleted": "Completed",
+    "kpiNoShow": "No-shows",
+    "kpiPending": "Awaiting approval",
+    "allStatuses": "All statuses",
+    "clickToBook": "Click an empty slot to book",
+    "legend": "Legend"
   },
   "bookings": {
     "title": "Reservations",
@@ -178,7 +186,12 @@
     "new": "Add exception",
     "empty": "No upcoming exceptions",
     "scope": "Applies to",
-    "scopes": { "business": "Whole business", "branch": "Branch", "staff": "Staff member", "resource": "Resource" },
+    "scopes": {
+      "business": "Whole business",
+      "branch": "Branch",
+      "staff": "Staff member",
+      "resource": "Resource"
+    },
     "kind": "Type",
     "closed": "Closed / time off",
     "open": "Extra opening",
@@ -214,8 +227,16 @@
     "empty": "No transactions yet",
     "kind": "Type",
     "method": "Method",
-    "kinds": { "deposit": "Deposit", "full": "Full", "balance": "Balance", "refund": "Refund" },
-    "methods": { "online": "Online", "cash": "Cash" },
+    "kinds": {
+      "deposit": "Deposit",
+      "full": "Full",
+      "balance": "Balance",
+      "refund": "Refund"
+    },
+    "methods": {
+      "online": "Online",
+      "cash": "Cash"
+    },
     "refund": "Refund",
     "refundTitle": "Refund payment",
     "refundAmount": "Amount to refund",
@@ -263,7 +284,11 @@
     "generate": "Generate with AI",
     "generated": "Description generated — review and save.",
     "tone": "Tone",
-    "tones": { "professional": "Professional", "friendly": "Friendly", "luxury": "Luxury" },
+    "tones": {
+      "professional": "Professional",
+      "friendly": "Friendly",
+      "luxury": "Luxury"
+    },
     "logo": "Logo URL",
     "cover": "Cover image URL",
     "upload": "Upload",
@@ -288,7 +313,12 @@
     "allowStaffSelection": "Let customers choose a staff member",
     "waitlistEnabled": "Enable waiting list",
     "paymentMode": "Payment requirement",
-    "paymentModes": { "none": "No online payment", "optional": "Optional online payment", "deposit": "Deposit required", "full": "Full prepayment" },
+    "paymentModes": {
+      "none": "No online payment",
+      "optional": "Optional online payment",
+      "deposit": "Deposit required",
+      "full": "Full prepayment"
+    },
     "depositPercent": "Deposit (%)",
     "acceptCash": "Accept payment at the location",
     "cancelAllowed": "Allow online cancellation",
@@ -315,9 +345,26 @@
     "teamInvite": "Add a team member",
     "teamInviteHint": "They need a Bookly account first.",
     "teamRole": "Role",
-    "teamRoles": { "owner": "Owner", "manager": "Manager", "staff": "Staff" },
+    "teamRoles": {
+      "owner": "Owner",
+      "manager": "Manager",
+      "staff": "Staff"
+    },
     "teamAdded": "Team member added",
-    "teamRemoved": "Team member removed"
+    "teamRemoved": "Team member removed",
+    "theme": "Industry theme",
+    "themeHint": "Controls the layout and typography of your public booking page.",
+    "themeInherit": "Use industry default ({{name}})",
+    "themes": {
+      "default": "Classic",
+      "clinical": "Clinical",
+      "luxe": "Quiet luxury",
+      "academic": "Academic",
+      "professional": "Professional",
+      "automotive": "Workshop",
+      "hospitality": "Hospitality",
+      "civic": "Public service"
+    }
   },
   "billing": {
     "title": "Plan & billing",
@@ -367,7 +414,12 @@
     "owner": "Owner",
     "plan": "Plan",
     "role": "Role",
-    "roles": { "super_admin": "Super admin", "business_owner": "Business owner", "staff": "Staff", "customer": "Customer" },
+    "roles": {
+      "super_admin": "Super admin",
+      "business_owner": "Business owner",
+      "staff": "Staff",
+      "customer": "Customer"
+    },
     "categoryNew": "New industry",
     "categoryEdit": "Edit industry",
     "slug": "Slug",
@@ -411,7 +463,13 @@
     "permissions": "Permissions",
     "ownerLocked": "The owner role always has every permission.",
     "subject": "Subject",
-    "from": "From"
+    "from": "From",
+    "welcome": "Welcome back, {{name}}",
+    "vsPrevious": "{{value}} vs previous period",
+    "pendingApprovals": "Awaiting approval",
+    "noPending": "No businesses awaiting approval",
+    "approved": "Business approved",
+    "defaultTheme": "Default theme"
   },
   "form": {
     "dayOff": "Closed",
@@ -423,7 +481,16 @@
     "fieldType": "Type",
     "fieldOptions": "Options (comma separated)",
     "fieldRequired": "Required",
-    "types": { "text": "Short text", "textarea": "Long text", "number": "Number", "select": "Dropdown", "checkbox": "Checkbox", "date": "Date", "phone": "Phone", "email": "Email" },
+    "types": {
+      "text": "Short text",
+      "textarea": "Long text",
+      "number": "Number",
+      "select": "Dropdown",
+      "checkbox": "Checkbox",
+      "date": "Date",
+      "phone": "Phone",
+      "email": "Email"
+    },
     "copyToAll": "Copy to all days"
   },
   "limits": {

@@ -1,10 +1,17 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { DateTime } from 'luxon';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
+import { firstName } from '@/lib/utils';
+import { errorMessage } from '@/services/api';
+import type { Business } from '@/types';
 import { Building2, CalendarCheck, Clock, Coins, TrendingUp, Users } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { PageHeader, QueryView, StatCard } from '@/components/common';
+import { Delta, PageHeader, QueryView, StatCard } from '@/components/common';
 import { NativeSelect } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/misc';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
@@ -12,7 +19,8 @@ import { api } from '@/services/api';
 import { fmtShortDate, money } from '@/utils/format';
 
 interface A {
-  kpis: { businesses: number; activeBusinesses: number; pendingBusinesses: number; users: number; bookings: number; mrr: number; gmv: Array<{ _id: string; sum: number }> };
+  kpis: { businesses: number; activeBusinesses: number; pendingBusinesses: number; users: number; bookings: number; mrr: number; gmv: Array<{ _id: string; sum: number }>; signups: number };
+  previous?: { bookings: number; signups: number };
   roles: Record<string, number>;
   series: Array<{ date: string; bookings: number; signups: number }>;
   plans: Array<{ name: string; subscribers: number }>;
@@ -21,14 +29,26 @@ interface A {
 }
 
 export function AdminOverview() {
-  const { t } = useTranslation('dashboard');
+  const { t, i18n } = useTranslation('dashboard');
+  const { user } = useAuth();
+  const qc = useQueryClient();
   useDocumentTitle(t('admin.nav.overview'));
+  const pending = useQuery({ queryKey: ['admin', 'businesses', { status: 'pending', limit: 5 }], queryFn: () => api.get<{ items: Array<Business & { owner?: { name: string; email: string } }>; total: number }>('/admin/businesses', { status: 'pending', limit: 5 }) });
+  const approve = async (id: string) => {
+    try {
+      await api.patch(`/admin/businesses/${id}`, { status: 'active' });
+      toast.success(t('admin.approved'));
+      void qc.invalidateQueries({ queryKey: ['admin'] });
+    } catch (e) {
+      toast.error(errorMessage(e));
+    }
+  };
   const [days, setDays] = useState(30);
   const q = useQuery({ queryKey: ['admin', 'analytics', days], queryFn: () => api.get<A>('/admin/analytics', { days }) });
   const tip = { borderRadius: 12, border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' };
   return (
     <>
-      <PageHeader title={t('admin.nav.overview')} actions={<NativeSelect value={days} onChange={(e) => setDays(Number(e.target.value))} className="w-40" aria-label="Range">{[7, 30, 90, 365].map((d) => <option key={d} value={d}>{t('overview.range', { days: d })}</option>)}</NativeSelect>} />
+      <PageHeader title={t('admin.welcome', { name: firstName(user?.name) })} description={`${t('admin.nav.overview')} · ${DateTime.now().setLocale(i18n.language === 'ar' ? 'ar' : 'en').toLocaleString(DateTime.DATE_HUGE)}`} actions={<NativeSelect value={days} onChange={(e) => setDays(Number(e.target.value))} className="w-40" aria-label="Range">{[7, 30, 90, 365].map((d) => <option key={d} value={d}>{t('overview.range', { days: d })}</option>)}</NativeSelect>} />
       <QueryView query={q}>
         {(d) => (
           <div className="space-y-6">
@@ -36,8 +56,8 @@ export function AdminOverview() {
               <StatCard label={t('admin.kpiBusinesses')} value={d.kpis.businesses} icon={<Building2 />} />
               <StatCard label={t('admin.kpiActive')} value={d.kpis.activeBusinesses} icon={<TrendingUp />} tone="accent" />
               <StatCard label={t('admin.kpiPending')} value={<Link to="/admin/businesses?status=pending" className="hover:underline">{d.kpis.pendingBusinesses}</Link>} icon={<Clock />} tone="amber" />
-              <StatCard label={t('admin.kpiUsers')} value={d.kpis.users} icon={<Users />} />
-              <StatCard label={t('admin.kpiBookings')} value={d.kpis.bookings} icon={<CalendarCheck />} tone="accent" />
+              <StatCard label={t('admin.kpiUsers')} value={d.kpis.users} hint={<span className="flex items-center gap-1.5">+{d.kpis.signups} {t('admin.signups').toLowerCase()} <Delta current={d.kpis.signups} previous={d.previous?.signups} /></span>} icon={<Users />} />
+              <StatCard label={t('admin.kpiBookings')} value={d.kpis.bookings} hint={<Delta current={d.kpis.bookings} previous={d.previous?.bookings} />} icon={<CalendarCheck />} tone="accent" />
               <StatCard label={t('admin.kpiMrr')} value={money(d.kpis.mrr, 'USD')} hint={d.kpis.gmv.map((g) => money(g.sum, g._id)).join(' · ') || undefined} icon={<Coins />} tone="rose" />
             </div>
             <div className="grid gap-6 xl:grid-cols-3">
@@ -56,12 +76,29 @@ export function AdminOverview() {
                   </ResponsiveContainer>
                 </CardContent>
               </Card>
+              <div className="space-y-6">
+              <Card>
+                <CardHeader><CardTitle className="flex items-center justify-between">{t('admin.pendingApprovals')}{pending.data?.total ? <span className="num rounded-full bg-amber-500/15 px-2 text-xs text-amber-700 dark:text-amber-400">{pending.data.total}</span> : null}</CardTitle></CardHeader>
+                <CardContent>
+                  {pending.data?.items.length ? (
+                    <ul className="space-y-2">
+                      {pending.data.items.map((b) => (
+                        <li key={b._id} className="flex items-center justify-between gap-3 rounded-xl border p-2.5 text-sm">
+                          <span className="min-w-0"><span className="block truncate font-medium">{b.name}</span><span className="block truncate text-xs text-muted-foreground">{b.owner?.email ?? b.address?.city}</span></span>
+                          <Button size="sm" onClick={() => approve(b._id)}>{t('admin.approve')}</Button>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : <p className="text-sm text-muted-foreground">{t('admin.noPending')}</p>}
+                </CardContent>
+              </Card>
               <Card>
                 <CardHeader><CardTitle>{t('admin.topBusinesses')}</CardTitle></CardHeader>
                 <CardContent>
                   <ol className="space-y-2">{d.topBusinesses.map((b, i) => <li key={b.slug} className="flex items-center justify-between gap-3 text-sm"><span className="flex items-center gap-2"><span className="num w-5 text-muted-foreground">{i + 1}</span><a href={`/b/${b.slug}`} target="_blank" rel="noreferrer" className="font-medium hover:underline">{b.name}</a></span><span className="num font-semibold">{b.bookings}</span></li>)}</ol>
                 </CardContent>
               </Card>
+              </div>
             </div>
             <div className="grid gap-6 lg:grid-cols-2">
               <Card>

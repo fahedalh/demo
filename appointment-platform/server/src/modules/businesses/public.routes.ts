@@ -38,7 +38,7 @@ publicRouter.get(
         Staff.find({ business: business._id, isActive: true, acceptsBookings: true }, { name: 1, title: 1, bio: 1, avatar: 1, color: 1, branches: 1, rating: 1 }).lean(),
         Branch.find({ business: business._id, isActive: true }, { name: 1, address: 1, phone: 1, workingHours: 1, timezone: 1 }).lean(),
         Resource.find({ business: business._id, isActive: true }, { name: 1, type: 1, capacity: 1, branch: 1, description: 1 }).lean(),
-        Review.find({ business: business._id, status: 'published' }).sort({ createdAt: -1 }).limit(10).lean(),
+        Review.find({ business: business._id, status: 'published' }).sort({ createdAt: -1 }).limit(30).lean(),
       ]);
       const b = (await business.populate('category')).toObject();
       return {
@@ -47,7 +47,7 @@ publicRouter.get(
         staff,
         branches,
         resources,
-        reviews: reviews.map((r) => ({ _id: r._id, rating: r.rating, comment: r.comment, reply: r.reply, authorName: r.authorName, createdAt: r.createdAt })),
+        reviews: reviews.map((r) => ({ _id: r._id, staff: r.staff, service: r.service, rating: r.rating, comment: r.comment, reply: r.reply, authorName: r.authorName, createdAt: r.createdAt })),
       };
     });
     const provider = onlineProvider();

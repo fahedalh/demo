@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { DateTime } from 'luxon';
 import { z } from 'zod';
-import { PAYMENT_MODES, SUPPORTED_CURRENCIES, SUPPORTED_LOCALES, defaultWeeklySchedule } from '@bookly/shared';
+import { PAYMENT_MODES, SUPPORTED_CURRENCIES, SUPPORTED_LOCALES, THEME_PRESETS, defaultWeeklySchedule } from '@bookly/shared';
 import { requireAuth } from '../../middleware/auth';
 import { can, loadTenant } from '../../middleware/tenant';
 import { validate } from '../../middleware/validate';
@@ -43,7 +43,7 @@ const updateBody = createBody
     logo: z.string().url().optional().or(z.literal('')),
     cover: z.string().url().optional().or(z.literal('')),
     gallery: z.array(z.string().url()).max(20).optional(),
-    branding: z.object({ primaryColor: hexColor, accentColor: hexColor, customDomain: z.string().max(200).optional(), hidePlatformBranding: z.boolean() }).partial().optional(),
+    branding: z.object({ primaryColor: hexColor, accentColor: hexColor, customDomain: z.string().max(200).optional(), hidePlatformBranding: z.boolean(), theme: z.enum(THEME_PRESETS).nullable() }).partial().optional(),
     settings: z
       .object({
         slotInterval: z.number().int().min(5).max(240),
@@ -134,7 +134,8 @@ tenant.patch(
     for (const k of ['logo', 'cover'] as const) if (rest[k] === '') business.set(k, undefined);
     if (address) business.set('address', toAddress(address));
     if (contact) for (const [k, v] of Object.entries(contact)) business.set(`contact.${k}`, v || undefined);
-    if (branding) for (const [k, v] of Object.entries(branding)) business.set(`branding.${k}`, v);
+    // Theme presets are available on every plan; colours/domain/badge removal are plan features.
+    if (branding) for (const [k, v] of Object.entries(branding)) business.set(`branding.${k}`, v === null ? undefined : v);
     if (settings) {
       for (const [k, v] of Object.entries(settings)) {
         if (v && typeof v === 'object' && !Array.isArray(v)) for (const [k2, v2] of Object.entries(v)) business.set(`settings.${k}.${k2}`, v2);

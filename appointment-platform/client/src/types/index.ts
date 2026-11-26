@@ -1,4 +1,4 @@
-import type { BookingStatus, CustomField, LocalizedText, MemberRole, Permission, PlatformRole, WeeklySchedule } from '@bookly/shared';
+import type { BookingStatus, CustomField, LocalizedText, MemberRole, Permission, PlatformRole, ThemePreset, WeeklySchedule } from '@bookly/shared';
 
 export type ID = string;
 
@@ -35,6 +35,7 @@ export interface Category {
   terminology: { staff: LocalizedText; service: LocalizedText; resource: LocalizedText };
   bookingFlow: { steps: string[]; requireStaff: boolean; resourceFirst: boolean; sessionModes: string[]; customFields: CustomField[] };
   subcategories?: LocalizedText[];
+  theme?: ThemePreset;
   isActive: boolean;
   sortOrder: number;
   businessCount?: number;
@@ -72,7 +73,7 @@ export interface Business {
   cover?: string;
   gallery?: string[];
   category: Category | ID;
-  branding: { primaryColor: string; accentColor: string; customDomain?: string; hidePlatformBranding?: boolean };
+  branding: { primaryColor: string; accentColor: string; customDomain?: string; hidePlatformBranding?: boolean; theme?: ThemePreset };
   contact?: { email?: string; phone?: string; website?: string; whatsapp?: string };
   address?: Address;
   timezone: string;
@@ -210,6 +211,7 @@ export interface Payment {
 
 export interface Review {
   _id: ID;
+  staff?: { name: string } | ID | null;
   rating: number;
   comment?: string;
   reply?: { text: string; at: string };
@@ -217,7 +219,6 @@ export interface Review {
   status?: 'published' | 'hidden';
   createdAt: string;
   service?: { name: string } | null;
-  staff?: { name: string } | null;
 }
 
 export interface Plan {

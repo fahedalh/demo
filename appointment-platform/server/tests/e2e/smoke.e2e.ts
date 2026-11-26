@@ -125,9 +125,10 @@ async function main() {
   await step('guest booking with required custom fields + online sandbox payment (clinic)', async () => {
     await pub.goto(`${BASE}/b/nour-family-clinic`);
     await pub.locator('#book button', { hasText: 'General Consultation' }).first().click();
-    const slot = pub.locator('button[aria-pressed]').first();
+    const slot = pub.locator('#book .grid button[aria-pressed]').first();
     await slot.waitFor({ timeout: 15000 });
-    await slot.click();
+    await slot.scrollIntoViewIfNeeded();
+    await slot.click({ position: { x: 10, y: 10 } });
     await pub.getByRole('button', { name: 'Continue' }).click();
     await pub.fill('#bk-name', 'Clinic Guest');
     await pub.fill('#bk-email', 'clinic.guest@e2e.test');
@@ -145,6 +146,36 @@ async function main() {
     await pub.waitForURL(/\/track\?/, { timeout: 15000 });
   });
 
+  await step('luxe theme (beauty): editorial hero + serif type', async () => {
+    await pub.goto(`${BASE}/b/lumiere-hair-beauty`);
+    await pub.locator('[data-theme-preset=luxe]').waitFor();
+    const font = await pub.locator('h1').first().evaluate((el: Element) => getComputedStyle(el).fontFamily);
+    if (!/Cormorant/i.test(font)) throw new Error(`h1 font is ${font}`);
+    await pub.getByRole('heading', { name: 'Meet our team' }).waitFor();
+    await shot(pub, '16-theme-luxe');
+    await pub.getByRole('heading', { name: 'Meet our team' }).scrollIntoViewIfNeeded();
+    await shot(pub, '16b-theme-luxe-team');
+  });
+  await step('clinical theme (healthcare): doctor directory → details → book with doctor', async () => {
+    await pub.goto(`${BASE}/b/nour-family-clinic`);
+    await pub.locator('[data-theme-preset=clinical]').waitFor();
+    await pub.getByRole('heading', { name: /Find the right doctor/i }).waitFor();
+    await shot(pub, '17-theme-clinical');
+    await pub.getByRole('button', { name: 'Details' }).first().click();
+    await pub.getByRole('button', { name: /Book with Dr\./ }).waitFor();
+    await shot(pub, '18-doctor-detail');
+    await pub.getByRole('button', { name: /Book with Dr\./ }).click();
+    // Wizard now lists only this doctor's services.
+    await pub.locator('#book').getByText('General Consultation').waitFor();
+    if (await pub.locator('#book').getByText('Paediatric Check-up').count()) throw new Error('services not filtered by doctor');
+  });
+  await step('hospitality theme: spaces section', async () => {
+    await pub.goto(`${BASE}/b/the-hive-workspace`);
+    await pub.locator('[data-theme-preset=hospitality]').waitFor();
+    await pub.getByRole('heading', { name: 'Spaces' }).waitFor();
+    await pub.getByText('Board Room', { exact: true }).waitFor();
+  });
+
   const owner = await newPage();
   current = owner;
   await step('owner dashboard overview', async () => {
@@ -158,6 +189,18 @@ async function main() {
     await owner.getByRole('tab', { name: 'Week' }).click();
     await owner.waitForTimeout(800);
     await shot(owner, '08-calendar-week');
+  });
+  await step('calendar: KPI strip, status filter, click empty slot to book', async () => {
+    await owner.getByText('Appointments').first().waitFor();
+    await owner.getByRole('tab', { name: 'Day' }).click();
+    await owner.waitForTimeout(500);
+    const col = owner.locator('[style*="cursor: copy"]').first();
+    const box = await col.boundingBox();
+    if (!box) throw new Error('no day column');
+    await owner.mouse.click(box.x + box.width / 2, box.y + 8);
+    await owner.getByRole('dialog').getByText('New booking').first().waitFor();
+    await owner.keyboard.press('Escape');
+    await owner.getByRole('tab', { name: 'Week' }).click();
   });
   await step('reservations: confirm a pending request + detail sheet', async () => {
     await owner.getByRole('link', { name: 'Reservations' }).click();

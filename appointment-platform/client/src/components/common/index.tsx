@@ -267,3 +267,16 @@ export function Section({ title, description, children, actions }: { title: Reac
     </Card>
   );
 }
+
+/** Period-over-period change, e.g. "+12%" in green. Renders nothing without a baseline. */
+export function Delta({ current, previous, invert }: { current: number; previous?: number; invert?: boolean }) {
+  if (previous === undefined || previous === 0) return null;
+  const change = (current - previous) / previous;
+  const up = change >= 0;
+  const good = invert ? !up : up;
+  return (
+    <span className={cn('num inline-flex items-center rounded-full px-1.5 py-0.5 text-[11px] font-semibold', good ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/10 text-rose-600 dark:text-rose-400')}>
+      {up ? '▲' : '▼'} {Math.abs(Math.round(change * 100))}%
+    </span>
+  );
+}

@@ -29,6 +29,27 @@ cancelled = slate, rejected = rose, no_show = orange.
 Gradient (used sparingly: hero, pricing highlight, empty-state art):
 `linear-gradient(135deg, hsl(243 75% 58%), hsl(280 70% 60%) 50%, hsl(168 70% 45%))`.
 
+## Industry themes
+Public business pages use one of eight **theme presets** (`shared` → `THEME_PRESETS`). The preset
+comes from the industry (`BusinessCategory.theme`, editable by admins) and a business can override it
+(`Business.branding.theme`, available on every plan). Brand colours always come from the business.
+
+| Preset | Used by (seed) | Hero | Team | Extras | Type & surfaces |
+|--------|----------------|------|------|--------|-----------------|
+| `clinical` | Healthcare | Compact, trust signals, "Book now" | Doctor directory: Book / Details → detail panel (bio, services, reviews, "Book with Dr …") | Specialty chips | Cool blue-white surfaces |
+| `luxe` | Beauty | Editorial split, arched image frame, "Book your experience" | Round portraits ("Meet our team") | Treatment chips; "When would you like to visit?" | Serif display (Cormorant Garamond / Amiri), cream & blush, flat 8 px radii |
+| `academic` | Education | Standard | Cards | Subject chips | Soft violet tint |
+| `professional` | Professional services | Standard | Directory | — | Serif display, slate tint, tighter radii |
+| `automotive` | Automotive | Standard | Cards | Service bays section | Neutral grey |
+| `hospitality` | Hospitality & events | Editorial | Cards | Spaces section (rooms, capacity) | Serif display, warm sand |
+| `civic` | Public services | Standard | Cards | — | Minimal, plain |
+| `default` | — | Standard | Cards | — | Platform defaults |
+
+Implementation: `client/src/features/themes/industryThemes.ts` (layout config),
+`.theme-<preset>` token overrides in `client/src/index.css` (light mode only; dark mode keeps
+platform surfaces), section variants in `client/src/features/business-page/Sections.tsx`.
+Adding a preset = one config entry + one CSS block; no per-industry page code.
+
 ## Typography
 * Latin: **Plus Jakarta Sans** (400/500/600/700/800). Arabic: **IBM Plex Sans Arabic** (400/500/600/700).
   Font family switches with `lang`.

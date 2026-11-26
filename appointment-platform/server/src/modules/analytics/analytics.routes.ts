@@ -43,6 +43,16 @@ businessAnalyticsRouter.get(
     const todayStart = DateTime.now().setZone(tz).startOf('day').toJSDate();
     const todayEnd = DateTime.now().setZone(tz).endOf('day').toJSDate();
 
+    const prevFrom = from.minus({ days });
+    const prevMatch = { business: b, start: { $gte: prevFrom.toJSDate(), $lt: from.toJSDate() }, ...staffScope };
+    const [prevBookings, prevRevenueAgg, prevCustomers] = await Promise.all([
+      Booking.countDocuments(prevMatch),
+      Payment.aggregate([
+        { $match: { business: b, purpose: { $ne: 'subscription' }, status: { $in: ['succeeded', 'refunded'] }, paidAt: { $gte: prevFrom.toJSDate(), $lt: from.toJSDate() } } },
+        { $group: { _id: null, sum: { $sum: { $cond: [{ $eq: ['$kind', 'refund'] }, { $multiply: ['$amount', -1] }, '$amount'] } } } },
+      ]),
+      Customer.countDocuments({ business: b, createdAt: { $gte: prevFrom.toJSDate(), $lt: from.toJSDate() } }),
+    ]);
     const [statusAgg, series, revenueSeries, topServices, staffLoad, newCustomers, rating, today, pending, heat] = await Promise.all([
       Booking.aggregate([{ $match: match }, { $group: { _id: '$status', n: { $sum: 1 }, value: { $sum: '$price.amount' } } }]),
       Booking.aggregate([{ $match: match }, { $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$start', timezone: tz } }, bookings: { $sum: 1 } } }]),
@@ -79,6 +89,7 @@ businessAnalyticsRouter.get(
         reviews: rating[0]?.n ?? 0,
         pending,
       },
+      previous: { bookings: prevBookings, revenue: Math.round((prevRevenueAgg[0]?.sum ?? 0) * 100) / 100, newCustomers: prevCustomers },
       status: Object.fromEntries(statusAgg.map((x) => [x._id, x.n])),
       series: bookingsSeries.map((d, i) => ({ ...d, revenue: revSeries[i].revenue })),
       topServices: topServices.map((s) => ({ name: s._id, bookings: s.n, value: s.value })),
@@ -97,6 +108,12 @@ adminAnalyticsRouter.get(
   ah(async (req, res) => {
     const { days } = req.query as unknown as { days: number };
     const from = DateTime.utc().startOf('day').minus({ days: days - 1 });
+    const prevFrom = from.minus({ days });
+    const [prevBookings, prevSignups, signups] = await Promise.all([
+      Booking.countDocuments({ createdAt: { $gte: prevFrom.toJSDate(), $lt: from.toJSDate() } }),
+      User.countDocuments({ createdAt: { $gte: prevFrom.toJSDate(), $lt: from.toJSDate() } }),
+      User.countDocuments({ createdAt: { $gte: from.toJSDate() } }),
+    ]);
     const [bizStatus, roles, bookings, gmv, bookingSeries, signupSeries, subs, categories, topBusinesses] = await Promise.all([
       Business.aggregate([{ $group: { _id: '$status', n: { $sum: 1 } } }]),
       User.aggregate([{ $group: { _id: '$role', n: { $sum: 1 } } }]),
@@ -125,7 +142,9 @@ adminAnalyticsRouter.get(
         bookings,
         mrr: Math.round(mrr * 100) / 100,
         gmv,
+        signups,
       },
+      previous: { bookings: prevBookings, signups: prevSignups },
       roles: Object.fromEntries(roles.map((r) => [r._id, r.n])),
       series: bs.map((d, i) => ({ ...d, signups: ss[i].signups })),
       plans: plans.map((p) => ({ name: p.name, subscribers: subs.filter((s) => String((s.plan as unknown as { _id: unknown })?._id) === String(p._id)).length })),

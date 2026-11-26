@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import { NOTIFICATION_EVENTS, SUPPORTED_CURRENCIES, TEMPLATE_PLACEHOLDERS, type NotificationEvent } from '@bookly/shared';
+import { NOTIFICATION_EVENTS, SUPPORTED_CURRENCIES, TEMPLATE_PLACEHOLDERS, THEME_PRESETS, type NotificationEvent, type ThemePreset } from '@bookly/shared';
 import { ConfirmDialog, Field, PageHeader, QueryView, Section } from '@/components/common';
 import { Button } from '@/components/ui/button';
 import { Input, NativeSelect, Textarea } from '@/components/ui/input';
@@ -183,10 +183,18 @@ function BrandingTab() {
   const { save, saving } = useSave();
   const usage = useQuery({ queryKey: ['usage', id], queryFn: () => api.get<{ plan: { limits: { customBranding: boolean } } }>(`/businesses/${id}/usage`) });
   const locked = usage.data ? !usage.data.plan?.limits?.customBranding : false;
+  const category = b.category as Category;
+  const [theme, setTheme] = useState<ThemePreset | ''>(b.branding.theme ?? '');
   const [f, setF] = useState({ primaryColor: b.branding.primaryColor, accentColor: b.branding.accentColor, hidePlatformBranding: !!b.branding.hidePlatformBranding, customDomain: b.branding.customDomain ?? '' });
   return (
-    <form className="grid gap-6 lg:grid-cols-2" onSubmit={(e) => { e.preventDefault(); save({ branding: { ...f, customDomain: f.customDomain || undefined } }); }}>
+    <form className="grid gap-6 lg:grid-cols-2" onSubmit={(e) => { e.preventDefault(); save({ branding: locked ? { theme: theme || null } : { ...f, customDomain: f.customDomain || undefined, theme: theme || null } }); }}>
       <Section title={t('settings.branding')}>
+        <Field label={t('settings.theme')} hint={t('settings.themeHint')} htmlFor="br-theme" className="mb-5">
+          <NativeSelect id="br-theme" value={theme} onChange={(e) => setTheme(e.target.value as ThemePreset | '')}>
+            <option value="">{t('settings.themeInherit', { name: t(`settings.themes.${category?.theme ?? 'default'}`) })}</option>
+            {THEME_PRESETS.map((p) => <option key={p} value={p}>{t(`settings.themes.${p}`)}</option>)}
+          </NativeSelect>
+        </Field>
         {locked && (
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-amber-500/10 p-3 text-sm text-amber-800 dark:text-amber-300">
             <span className="flex items-center gap-2"><Lock className="h-4 w-4" />{t('settings.brandingLocked')}</span>
@@ -198,8 +206,8 @@ function BrandingTab() {
           <Field label={t('settings.accentColor')}><ColorInput value={f.accentColor} onChange={(v) => setF({ ...f, accentColor: v })} /></Field>
           <Field label="Custom domain" hint="booking.yourdomain.com — point a CNAME to the platform"><Input dir="ltr" value={f.customDomain} onChange={(e) => setF({ ...f, customDomain: e.target.value })} /></Field>
           <label className="flex items-center gap-3 text-sm"><Switch checked={f.hidePlatformBranding} onCheckedChange={(c) => setF({ ...f, hidePlatformBranding: c })} />{t('settings.hideBranding')}</label>
-          <Button type="submit" loading={saving}>{tc('actions.save')}</Button>
         </fieldset>
+        <Button type="submit" className="mt-5" loading={saving}>{tc('actions.save')}</Button>
       </Section>
       <Section title={t('settings.preview')}>
         <div className="overflow-hidden rounded-2xl border">

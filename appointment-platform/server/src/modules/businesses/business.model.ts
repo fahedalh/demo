@@ -1,5 +1,5 @@
 import { Schema, model, type HydratedDocument, type InferSchemaType } from 'mongoose';
-import { PAYMENT_MODES, SUPPORTED_LOCALES } from '@bookly/shared';
+import { PAYMENT_MODES, SUPPORTED_LOCALES, THEME_PRESETS } from '@bookly/shared';
 import { addressSchema } from '../common/schemas';
 
 const businessSchema = new Schema(
@@ -18,6 +18,8 @@ const businessSchema = new Schema(
       accentColor: { type: String, default: '#14b8a6', match: /^#[0-9a-fA-F]{6}$/ },
       customDomain: String,
       hidePlatformBranding: { type: Boolean, default: false },
+      /** Overrides the category theme preset; empty = inherit from category. */
+      theme: { type: String, enum: THEME_PRESETS },
     },
     contact: { email: String, phone: String, website: String, whatsapp: String },
     address: addressSchema,

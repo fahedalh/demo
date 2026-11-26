@@ -22,15 +22,18 @@ interface Props {
   value?: Slot | null;
   onChange: (slot: Slot | null, date: string) => void;
   onNoSlots?: (date: string) => void;
+  /** Pre-select a local date (YYYY-MM-DD), e.g. from a calendar click. */
+  initialDate?: string;
 }
 
 const PAGE = 14;
 
-export function SlotPicker({ base, service, staff, branch, attendees, exclude, timezone, value, onChange, onNoSlots }: Props) {
+export function SlotPicker({ base, service, staff, branch, attendees, exclude, timezone, value, onChange, onNoSlots, initialDate }: Props) {
   const { t, i18n } = useTranslation();
   const today = DateTime.now().setZone(timezone).startOf('day');
-  const [from, setFrom] = useState(today);
-  const [date, setDate] = useState<string | null>(null);
+  const initial = initialDate ? DateTime.fromISO(initialDate, { zone: timezone }).startOf('day') : null;
+  const [from, setFrom] = useState(initial && initial > today ? initial : today);
+  const [date, setDate] = useState<string | null>(initial && initial >= today ? initialDate! : null);
   const params = { service, staff, branch, attendees, exclude };
 
   const days = useQuery({

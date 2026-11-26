@@ -66,7 +66,7 @@ export function ReviewsPage() {
                     <Card key={r._id} className={`p-5 ${r.status === 'hidden' ? 'opacity-60' : ''}`}>
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <div className="flex items-center gap-3"><span className="font-semibold">{r.authorName}</span><Stars value={r.rating} /></div>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">{r.service?.name}{r.staff?.name ? ` · ${r.staff.name}` : ''} · {fmtDate(r.createdAt)}{r.status === 'hidden' && <StatusBadge status="hidden" />}</div>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">{r.service?.name}{typeof r.staff === 'object' && r.staff?.name ? ` · ${r.staff.name}` : ''} · {fmtDate(r.createdAt)}{r.status === 'hidden' && <StatusBadge status="hidden" />}</div>
                       </div>
                       {r.comment && <p className="mt-2 text-sm">{r.comment}</p>}
                       {r.reply?.text && replying !== r._id && <div className="mt-3 rounded-xl bg-muted/60 p-3 text-sm"><p className="mb-1 text-xs font-semibold">{tc('business.reply')}</p>{r.reply.text}</div>}

@@ -1,7 +1,7 @@
 # PROJECT_CONTEXT
 
 > Living document. Update at the end of every development session.
-> Last updated: 2026-11-26 (session 1).
+> Last updated: 2026-11-26 (session 2 — industry themes).
 
 ## 1. Vision
 A premium, multi-tenant, multipurpose appointment booking SaaS — one configurable booking engine for
@@ -39,6 +39,8 @@ notifications, analytics and an optional AI layer. Details: `docs/PRD.md`.
    separate app.
 9. Subscriptions are paid through the same payment-provider checkout as bookings (Payment with
    `purpose: 'subscription'`); Stripe Billing (recurring) is a roadmap item.
+10. Industry themes are presets: `BusinessCategory.theme` (admin) → overridable by `Business.branding.theme`;
+   the public page picks hero/team/section variants + scoped CSS tokens. See DESIGN_SYSTEM.md.
 
 ## 4. Completed features
 **Backend**
@@ -92,11 +94,22 @@ notifications, analytics and an optional AI layer. Details: `docs/PRD.md`.
 - i18n: EN + AR (full translations, RTL via logical properties, Arabic typeface, mirrored icons),
   parity test; dark mode; real-time toasts; skeletons/empty/error states everywhere.
 
+## 4b. Session 2 — design direction (industry themes)
+- 8 theme presets; healthcare = clinical doctor directory + doctor detail panel + "Book with Dr …"
+  (wizard limited to that doctor's services); beauty = quiet-luxury editorial page (serif, arch
+  frame, portraits); hospitality/automotive = spaces/bays section; service-group chips.
+- Theme pickers: Settings → Branding (business override, all plans) and Admin → Industries.
+- Calendar: KPI strip (appointments, completed %, no-show %, awaiting approval) that doubles as a
+  status filter, status dropdown, per-day/per-staff counts, legend, click an empty slot to book
+  (pre-selects date and staff).
+- Admin overview: welcome header, period-over-period deltas, pending-approvals panel with one-click
+  approve. Business overview: deltas for bookings, revenue, new customers.
+
 ## 5. Current status
 - Server: typechecks; 27 unit/smoke tests pass; **7 API integration tests pass against real MongoDB**
   (`npm run test:integration`), incl. two concurrent bookings for one slot → exactly one 201 + one 409.
 - Client: typechecks; production build OK (route-level code splitting); 7 tests pass (incl. EN/AR key parity).
-- **E2E (`npm run test:e2e`): 13/13 flows pass with zero browser console/API errors** — EN landing,
+- **E2E (`npm run test:e2e`): 17/17 flows pass (incl. luxe/clinical/hospitality themes and calendar click-to-book) with zero browser console/API errors** — EN landing,
   AI search, guest salon booking (provider step, pay at location), clinic booking with required
   custom fields + sandbox deposit payment, owner overview/calendar/reservations/services/settings,
   admin overview & pending approvals, Arabic RTL landing/account/business page, mobile (no overflow).

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { BOOKING_FLOW_STEPS } from '@bookly/shared';
+import { BOOKING_FLOW_STEPS, THEME_PRESETS } from '@bookly/shared';
 import { requireAuth, requireRole } from '../../middleware/auth';
 import { validate } from '../../middleware/validate';
 import { audit } from '../../services/audit';
@@ -31,6 +31,7 @@ const body = z.object({
     .partial()
     .optional(),
   subcategories: z.array(localizedZ).max(30).optional(),
+  theme: z.enum(THEME_PRESETS).optional(),
   isActive: z.boolean().optional(),
   sortOrder: z.number().int().optional(),
 });

@@ -147,35 +147,82 @@
     "searchWhere": "City",
     "searchCta": "Search",
     "aiHint": "Ask in plain language — we’ll find the right filters.",
-    "stats": { "businesses": "businesses", "categories": "industries", "languages": "languages" },
+    "stats": {
+      "businesses": "businesses",
+      "categories": "industries",
+      "languages": "languages"
+    },
     "categoriesTitle": "Browse by industry",
     "categoriesSubtitle": "One booking engine, tailored to how each industry works.",
     "featuredTitle": "Featured businesses",
     "featuredSubtitle": "Highly rated places taking bookings this week.",
     "howTitle": "How it works",
     "how": [
-      { "title": "Discover", "body": "Search by service, location, price, rating or availability — or just describe what you need." },
-      { "title": "Pick a time", "body": "See live availability, choose your provider and the slot that suits you." },
-      { "title": "You’re booked", "body": "Get instant confirmation, reminders and easy rescheduling — no phone calls." }
+      {
+        "title": "Discover",
+        "body": "Search by service, location, price, rating or availability — or just describe what you need."
+      },
+      {
+        "title": "Pick a time",
+        "body": "See live availability, choose your provider and the slot that suits you."
+      },
+      {
+        "title": "You’re booked",
+        "body": "Get instant confirmation, reminders and easy rescheduling — no phone calls."
+      }
     ],
     "popularTitle": "Popular services",
     "testimonialsTitle": "Loved by customers and businesses",
     "testimonials": [
-      { "quote": "Our no-shows dropped dramatically after switching on deposits and WhatsApp reminders.", "name": "Dr. Rania N.", "role": "Clinic owner, Riyadh" },
-      { "quote": "Booking my haircut takes ten seconds, in Arabic, and I can reschedule from my phone.", "name": "Sara Q.", "role": "Customer" },
-      { "quote": "We run four meeting rooms with zero double bookings. The calendar is a joy to use.", "name": "Zara A.", "role": "Workspace manager, Dubai" }
+      {
+        "quote": "Our no-shows dropped dramatically after switching on deposits and WhatsApp reminders.",
+        "name": "Dr. Rania N.",
+        "role": "Clinic owner, Riyadh"
+      },
+      {
+        "quote": "Booking my haircut takes ten seconds, in Arabic, and I can reschedule from my phone.",
+        "name": "Sara Q.",
+        "role": "Customer"
+      },
+      {
+        "quote": "We run four meeting rooms with zero double bookings. The calendar is a joy to use.",
+        "name": "Zara A.",
+        "role": "Workspace manager, Dubai"
+      }
     ],
     "businessTitle": "Run your business on Bookly",
     "businessBody": "Your own booking page, calendar, staff schedules, payments, reminders and analytics — set up in minutes.",
     "businessCta": "Create your business",
-    "businessPoints": ["Branded booking page & URL", "Drag-and-drop calendar", "Deposits & online payments", "Email & WhatsApp reminders", "Multi-branch & multi-staff", "AI insights"],
+    "businessPoints": [
+      "Branded booking page & URL",
+      "Drag-and-drop calendar",
+      "Deposits & online payments",
+      "Email & WhatsApp reminders",
+      "Multi-branch & multi-staff",
+      "AI insights"
+    ],
     "faqTitle": "Frequently asked questions",
     "faq": [
-      { "q": "Do I need an account to book?", "a": "Not always. Many businesses allow guest bookings — you’ll get a booking reference to manage it later. With an account you get history, favourites and reminders in one place." },
-      { "q": "How do I cancel or reschedule?", "a": "From your account or the Track booking page. Each business sets its own cancellation window, which is shown before you confirm." },
-      { "q": "Is my payment secure?", "a": "Online payments are processed by our payment provider; card details never touch our servers. You can also choose to pay at the location when the business allows it." },
-      { "q": "Which industries are supported?", "a": "Healthcare, beauty, education, professional services, automotive, hospitality and public services — and administrators can add new ones without any code." },
-      { "q": "Is Arabic fully supported?", "a": "Yes. The entire interface switches to a right-to-left Arabic layout, and notifications are sent in your language." }
+      {
+        "q": "Do I need an account to book?",
+        "a": "Not always. Many businesses allow guest bookings — you’ll get a booking reference to manage it later. With an account you get history, favourites and reminders in one place."
+      },
+      {
+        "q": "How do I cancel or reschedule?",
+        "a": "From your account or the Track booking page. Each business sets its own cancellation window, which is shown before you confirm."
+      },
+      {
+        "q": "Is my payment secure?",
+        "a": "Online payments are processed by our payment provider; card details never touch our servers. You can also choose to pay at the location when the business allows it."
+      },
+      {
+        "q": "Which industries are supported?",
+        "a": "Healthcare, beauty, education, professional services, automotive, hospitality and public services — and administrators can add new ones without any code."
+      },
+      {
+        "q": "Is Arabic fully supported?",
+        "a": "Yes. The entire interface switches to a right-to-left Arabic layout, and notifications are sent in your language."
+      }
     ]
   },
   "explore": {
@@ -187,7 +234,13 @@
     "rating": "Minimum rating",
     "availableOn": "Available on",
     "sort": "Sort by",
-    "sortOptions": { "relevance": "Recommended", "rating": "Top rated", "price": "Lowest price", "distance": "Nearest", "newest": "Newest" },
+    "sortOptions": {
+      "relevance": "Recommended",
+      "rating": "Top rated",
+      "price": "Lowest price",
+      "distance": "Nearest",
+      "newest": "Newest"
+    },
     "nearMe": "Near me",
     "nearMeOn": "Showing results near you",
     "map": "Map",
@@ -213,10 +266,33 @@
     "book": "Book",
     "reply": "Response from the business",
     "guestNotAllowed": "Please log in to book with this business.",
-    "pendingNotice": "This business confirms bookings manually — you’ll be notified once approved."
+    "pendingNotice": "This business confirms bookings manually — you’ll be notified once approved.",
+    "bookWith": "Book with {{name}}",
+    "details": "Details",
+    "specialties": "Specialties",
+    "spaces": "Spaces",
+    "capacity": "Up to {{count}} people",
+    "bookExperience": "Book your experience",
+    "visitTitle": "When would you like to visit?",
+    "meetTeam": "Meet our team",
+    "allServices": "All",
+    "bio": "About",
+    "offers": "Services offered",
+    "noStaffReviews": "No reviews yet for {{name}}.",
+    "available": "Accepting bookings",
+    "findDoctor": "Find the right {{staff}}",
+    "viewAll": "View all"
   },
   "booking": {
-    "steps": { "service": "Service", "staff": "Provider", "resource": "Resource", "datetime": "Date & time", "details": "Your details", "payment": "Payment", "done": "Done" },
+    "steps": {
+      "service": "Service",
+      "staff": "Provider",
+      "resource": "Resource",
+      "datetime": "Date & time",
+      "details": "Your details",
+      "payment": "Payment",
+      "done": "Done"
+    },
     "chooseService": "Choose a service",
     "chooseStaff": "Choose your {{staff}}",
     "anyStaff": "No preference",
@@ -369,7 +445,11 @@
     "message": "Message",
     "sent": "Thanks! Your message has been sent."
   },
-  "notFound": { "title": "Page not found", "body": "The page you’re looking for doesn’t exist or has moved.", "home": "Back to home" },
+  "notFound": {
+    "title": "Page not found",
+    "body": "The page you’re looking for doesn’t exist or has moved.",
+    "home": "Back to home"
+  },
   "pay": {
     "title": "Sandbox checkout",
     "notice": "Test mode — no real money is charged. Approve or decline to simulate the payment result.",

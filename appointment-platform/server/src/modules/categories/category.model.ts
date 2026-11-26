@@ -1,5 +1,5 @@
 import { Schema, model, type HydratedDocument, type InferSchemaType } from 'mongoose';
-import { BOOKING_FLOW_STEPS, SESSION_MODES } from '@bookly/shared';
+import { BOOKING_FLOW_STEPS, SESSION_MODES, THEME_PRESETS } from '@bookly/shared';
 import { customFieldSchema, localizedSchema } from '../common/schemas';
 
 const categorySchema = new Schema(
@@ -23,6 +23,8 @@ const categorySchema = new Schema(
       customFields: { type: [customFieldSchema], default: [] },
     },
     subcategories: [localizedSchema],
+    /** Default visual theme for businesses in this industry. */
+    theme: { type: String, enum: THEME_PRESETS, default: 'default' },
     isActive: { type: Boolean, default: true },
     sortOrder: { type: Number, default: 0 },
   },

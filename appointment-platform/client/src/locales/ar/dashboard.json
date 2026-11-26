@@ -50,7 +50,8 @@
     "setupServices": "أضف خدماتك",
     "setupStaff": "أضف فريقك",
     "setupHours": "حدد ساعات العمل",
-    "setupShare": "شارك صفحة الحجز"
+    "setupShare": "شارك صفحة الحجز",
+    "vsPrevious": "{{value}} مقارنة بالفترة السابقة"
   },
   "calendar": {
     "title": "التقويم",
@@ -64,7 +65,14 @@
     "moved": "تم نقل الحجز",
     "more": "+{{count}} أخرى",
     "closed": "مغلق",
-    "newBooking": "حجز جديد"
+    "newBooking": "حجز جديد",
+    "kpiTotal": "المواعيد",
+    "kpiCompleted": "المكتملة",
+    "kpiNoShow": "عدم الحضور",
+    "kpiPending": "بانتظار الموافقة",
+    "allStatuses": "كل الحالات",
+    "clickToBook": "اضغط على وقت فارغ للحجز",
+    "legend": "دليل الألوان"
   },
   "bookings": {
     "title": "الحجوزات",
@@ -178,7 +186,12 @@
     "new": "إضافة استثناء",
     "empty": "لا توجد استثناءات قادمة",
     "scope": "ينطبق على",
-    "scopes": { "business": "النشاط بالكامل", "branch": "فرع", "staff": "موظف", "resource": "مورد" },
+    "scopes": {
+      "business": "النشاط بالكامل",
+      "branch": "فرع",
+      "staff": "موظف",
+      "resource": "مورد"
+    },
     "kind": "النوع",
     "closed": "إغلاق / إجازة",
     "open": "ساعات إضافية",
@@ -214,8 +227,16 @@
     "empty": "لا توجد معاملات بعد",
     "kind": "النوع",
     "method": "الطريقة",
-    "kinds": { "deposit": "عربون", "full": "كامل", "balance": "المتبقي", "refund": "استرداد" },
-    "methods": { "online": "إلكتروني", "cash": "نقداً" },
+    "kinds": {
+      "deposit": "عربون",
+      "full": "كامل",
+      "balance": "المتبقي",
+      "refund": "استرداد"
+    },
+    "methods": {
+      "online": "إلكتروني",
+      "cash": "نقداً"
+    },
     "refund": "استرداد",
     "refundTitle": "استرداد الدفعة",
     "refundAmount": "المبلغ المسترد",
@@ -263,7 +284,11 @@
     "generate": "توليد بالذكاء الاصطناعي",
     "generated": "تم توليد الوصف — راجعه ثم احفظ.",
     "tone": "الأسلوب",
-    "tones": { "professional": "احترافي", "friendly": "ودود", "luxury": "فاخر" },
+    "tones": {
+      "professional": "احترافي",
+      "friendly": "ودود",
+      "luxury": "فاخر"
+    },
     "logo": "رابط الشعار",
     "cover": "رابط صورة الغلاف",
     "upload": "رفع",
@@ -288,7 +313,12 @@
     "allowStaffSelection": "السماح للعملاء باختيار الموظف",
     "waitlistEnabled": "تفعيل قائمة الانتظار",
     "paymentMode": "متطلبات الدفع",
-    "paymentModes": { "none": "بدون دفع إلكتروني", "optional": "دفع إلكتروني اختياري", "deposit": "عربون مطلوب", "full": "دفع كامل مسبق" },
+    "paymentModes": {
+      "none": "بدون دفع إلكتروني",
+      "optional": "دفع إلكتروني اختياري",
+      "deposit": "عربون مطلوب",
+      "full": "دفع كامل مسبق"
+    },
     "depositPercent": "العربون (٪)",
     "acceptCash": "قبول الدفع في الموقع",
     "cancelAllowed": "السماح بالإلغاء الإلكتروني",
@@ -315,9 +345,26 @@
     "teamInvite": "إضافة عضو للفريق",
     "teamInviteHint": "يجب أن يكون لديه حساب في بوكلي أولاً.",
     "teamRole": "الدور",
-    "teamRoles": { "owner": "المالك", "manager": "مدير", "staff": "موظف" },
+    "teamRoles": {
+      "owner": "المالك",
+      "manager": "مدير",
+      "staff": "موظف"
+    },
     "teamAdded": "تمت إضافة العضو",
-    "teamRemoved": "تمت إزالة العضو"
+    "teamRemoved": "تمت إزالة العضو",
+    "theme": "قالب القطاع",
+    "themeHint": "يتحكّم في تصميم وخطوط صفحة الحجز العامة.",
+    "themeInherit": "استخدم قالب القطاع ({{name}})",
+    "themes": {
+      "default": "كلاسيكي",
+      "clinical": "طبي",
+      "luxe": "فخامة هادئة",
+      "academic": "أكاديمي",
+      "professional": "مهني",
+      "automotive": "ورشة",
+      "hospitality": "ضيافة",
+      "civic": "خدمة عامة"
+    }
   },
   "billing": {
     "title": "الباقة والفوترة",
@@ -367,7 +414,12 @@
     "owner": "المالك",
     "plan": "الباقة",
     "role": "الدور",
-    "roles": { "super_admin": "مشرف عام", "business_owner": "مالك نشاط", "staff": "موظف", "customer": "عميل" },
+    "roles": {
+      "super_admin": "مشرف عام",
+      "business_owner": "مالك نشاط",
+      "staff": "موظف",
+      "customer": "عميل"
+    },
     "categoryNew": "قطاع جديد",
     "categoryEdit": "تعديل القطاع",
     "slug": "المعرّف",
@@ -411,7 +463,13 @@
     "permissions": "الصلاحيات",
     "ownerLocked": "دور المالك يملك جميع الصلاحيات دائماً.",
     "subject": "الموضوع",
-    "from": "المرسل"
+    "from": "المرسل",
+    "welcome": "مرحباً بعودتك يا {{name}}",
+    "vsPrevious": "{{value}} مقارنة بالفترة السابقة",
+    "pendingApprovals": "بانتظار الموافقة",
+    "noPending": "لا توجد أنشطة بانتظار الموافقة",
+    "approved": "تمت الموافقة على النشاط",
+    "defaultTheme": "القالب الافتراضي"
   },
   "form": {
     "dayOff": "مغلق",
@@ -423,7 +481,16 @@
     "fieldType": "النوع",
     "fieldOptions": "الخيارات (مفصولة بفاصلة)",
     "fieldRequired": "إلزامي",
-    "types": { "text": "نص قصير", "textarea": "نص طويل", "number": "رقم", "select": "قائمة منسدلة", "checkbox": "مربع اختيار", "date": "تاريخ", "phone": "هاتف", "email": "بريد إلكتروني" },
+    "types": {
+      "text": "نص قصير",
+      "textarea": "نص طويل",
+      "number": "رقم",
+      "select": "قائمة منسدلة",
+      "checkbox": "مربع اختيار",
+      "date": "تاريخ",
+      "phone": "هاتف",
+      "email": "بريد إلكتروني"
+    },
     "copyToAll": "نسخ لكل الأيام"
   },
   "limits": {

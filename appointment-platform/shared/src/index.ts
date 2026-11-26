@@ -164,6 +164,10 @@ export const PLAN_FEATURE_KEYS = [
 ] as const;
 export type PlanFeatureKey = (typeof PLAN_FEATURE_KEYS)[number];
 
+/** Industry theme presets: drive public page layout, typography and palette (see DESIGN_SYSTEM.md). */
+export const THEME_PRESETS = ['default', 'clinical', 'luxe', 'academic', 'professional', 'automotive', 'hospitality', 'civic'] as const;
+export type ThemePreset = (typeof THEME_PRESETS)[number];
+
 export const SUPPORTED_LOCALES = ['en', 'ar'] as const;
 export type Locale = (typeof SUPPORTED_LOCALES)[number];
 export const RTL_LOCALES: Locale[] = ['ar'];

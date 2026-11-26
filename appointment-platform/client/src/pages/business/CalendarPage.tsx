@@ -4,7 +4,7 @@ import { DateTime } from 'luxon';
 import { useMemo, useState, type DragEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import type { Paginated, WeeklySchedule } from '@bookly/shared';
+import type { BookingStatus, Paginated, WeeklySchedule } from '@bookly/shared';
 import { ErrorState, PageHeader, STATUS_COLOR } from '@/components/common';
 import { Button } from '@/components/ui/button';
 import { NativeSelect } from '@/components/ui/input';
@@ -24,6 +24,7 @@ const SNAP = 15; // minutes
 
 export function CalendarPage() {
   const { t, i18n } = useTranslation('dashboard');
+  const tc = useTranslation().t;
   const { id, business, can, staffId: myStaff } = useTenant();
   useDocumentTitle(t('calendar.title'));
   const tz = business.timezone;
@@ -34,6 +35,8 @@ export function CalendarPage() {
   const [staffFilter, setStaffFilter] = useState('');
   const [open, setOpen] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  const [createAt, setCreateAt] = useState<{ date?: string; staff?: string } | undefined>();
+  const [statusFilter, setStatusFilter] = useState<BookingStatus | ''>('');
   const canMove = can('bookings:manage', 'bookings:own');
 
   const staff = useTenantList<Staff>('staff', { active: 'true' });
@@ -56,7 +59,15 @@ export function CalendarPage() {
     queryFn: () => api.get<Paginated<Booking>>(`/businesses/${id}/bookings`, { from: range.from.toUTC().toISO()!, to: range.to.toUTC().toISO()!, status: 'pending,confirmed,completed,no_show', staff: staffFilter || undefined, limit: 500, sort: 'start' }),
     placeholderData: keepPreviousData,
   });
-  const bookings = q.data?.items ?? [];
+  const all = q.data?.items ?? [];
+  const bookings = statusFilter ? all.filter((b) => b.status === statusFilter) : all;
+  const kpi = {
+    total: all.length,
+    completed: all.filter((b) => b.status === 'completed').length,
+    noShow: all.filter((b) => b.status === 'no_show').length,
+    pending: all.filter((b) => b.status === 'pending').length,
+  };
+  const past = kpi.completed + kpi.noShow;
 
   // Visible hour window from branch hours (fallback 7–21).
   const [minH, maxH] = useMemo(() => {
@@ -91,8 +102,26 @@ export function CalendarPage() {
       <PageHeader
         title={t('calendar.title')}
         description={t('calendar.dragHint')}
-        actions={can('bookings:manage', 'bookings:own') && <Button onClick={() => setCreating(true)}><Plus />{t('calendar.newBooking')}</Button>}
+        actions={can('bookings:manage', 'bookings:own') && <Button onClick={() => { setCreateAt(undefined); setCreating(true); }}><Plus />{t('calendar.newBooking')}</Button>}
       />
+      <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {([
+          [t('calendar.kpiTotal'), kpi.total, ''],
+          [t('calendar.kpiCompleted'), past ? `${Math.round((kpi.completed / past) * 100)}%` : '—', 'completed'],
+          [t('calendar.kpiNoShow'), past ? `${Math.round((kpi.noShow / past) * 100)}%` : '—', 'no_show'],
+          [t('calendar.kpiPending'), kpi.pending, 'pending'],
+        ] as const).map(([label, value, st]) => (
+          <button
+            key={label}
+            onClick={() => setStatusFilter(statusFilter === st ? '' : (st as BookingStatus | ''))}
+            aria-pressed={!!st && statusFilter === st}
+            className={cn('rounded-2xl border bg-card p-4 text-start shadow-soft transition-colors hover:border-primary/40', st && statusFilter === st && 'border-primary ring-1 ring-primary')}
+          >
+            <p className="flex items-center gap-2 text-xs text-muted-foreground">{st && <span className="h-2 w-2 rounded-full" style={{ background: STATUS_COLOR[st as BookingStatus] }} />}{label}</p>
+            <p className="num mt-1 text-2xl font-bold">{value}</p>
+          </button>
+        ))}
+      </div>
       <Card className="mb-4 flex flex-wrap items-center gap-3 p-3">
         <div className="flex items-center gap-1">
           <Button variant="outline" size="icon-sm" onClick={() => step(-1)} aria-label="Previous"><ChevronLeft className="rtl:rotate-180" /></Button>
@@ -107,6 +136,10 @@ export function CalendarPage() {
               {staff.data!.items.map((s) => <option key={s._id} value={s._id}>{s.name}</option>)}
             </NativeSelect>
           )}
+          <NativeSelect value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as BookingStatus | '')} className="h-9 w-40" aria-label={t('calendar.allStatuses')}>
+            <option value="">{t('calendar.allStatuses')}</option>
+            {(['pending', 'confirmed', 'completed', 'no_show'] as const).map((s) => <option key={s} value={s}>{tc(`status.${s}`)}</option>)}
+          </NativeSelect>
           <Tabs value={view} onValueChange={(v) => setView(v as View)}>
             <TabsList className="h-9">
               <TabsTrigger value="day">{t('calendar.day')}</TabsTrigger>
@@ -131,11 +164,17 @@ export function CalendarPage() {
           byStaff={view === 'day' && visibleStaff.length > 0}
           onOpen={setOpen}
           onMove={move}
+          onCreate={canMove ? (start, staffId) => { setCreateAt({ date: start.toISODate()!, staff: staffId }); setCreating(true); } : undefined}
         />
       )}
+      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+        <span className="font-medium">{t('calendar.legend')}:</span>
+        {(['pending', 'confirmed', 'completed', 'no_show'] as const).map((s) => <span key={s} className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full" style={{ background: STATUS_COLOR[s] }} />{tc(`status.${s}`)}</span>)}
+        {canMove && <span className="ms-auto">{t('calendar.clickToBook')}</span>}
+      </div>
 
       <BookingSheet bookingId={open} onOpenChange={(o) => !o && setOpen(null)} />
-      <NewBookingDialog open={creating} onOpenChange={setCreating} />
+      <NewBookingDialog open={creating} onOpenChange={setCreating} initial={createAt} />
     </>
   );
 }
@@ -144,7 +183,7 @@ function colorFor(b: Booking) {
   return b.staff?.color ?? b.service?.color ?? '#6366f1';
 }
 
-function TimeGrid({ columns, bookings, tz, minH, maxH, hours, canMove, byStaff, onOpen, onMove }: {
+function TimeGrid({ columns, bookings, tz, minH, maxH, hours, canMove, byStaff, onOpen, onMove, onCreate }: {
   columns: Array<{ key: string; label: string; date: DateTime; staff?: Staff }>;
   bookings: Booking[];
   tz: string;
@@ -155,6 +194,7 @@ function TimeGrid({ columns, bookings, tz, minH, maxH, hours, canMove, byStaff, 
   byStaff: boolean;
   onOpen: (id: string) => void;
   onMove: (b: Booking, start: DateTime, staff?: string) => void;
+  onCreate?: (start: DateTime, staff?: string) => void;
 }) {
   const { t } = useTranslation('dashboard');
   const [dragOver, setDragOver] = useState<string | null>(null);
@@ -186,6 +226,10 @@ function TimeGrid({ columns, bookings, tz, minH, maxH, hours, canMove, byStaff, 
               <div key={c.key} className={cn('sticky top-0 z-10 flex items-center justify-center gap-2 border-b border-s bg-card px-2 py-3 text-sm font-semibold', isToday && 'text-primary')}>
                 {c.staff && <Avatar name={c.staff.name} color={c.staff.color} className="h-6 w-6 text-[9px]" />}
                 <span className="truncate">{c.label}</span>
+                {(() => {
+                  const n = bookings.filter((b) => DateTime.fromISO(b.start).setZone(tz).hasSame(c.date, 'day') && (!byStaff || b.staff?._id === c.staff?._id)).length;
+                  return n ? <span className="num rounded-full bg-primary/10 px-1.5 text-[11px] text-primary">{n}</span> : null;
+                })()}
               </div>
             );
           })}
@@ -206,19 +250,25 @@ function TimeGrid({ columns, bookings, tz, minH, maxH, hours, canMove, byStaff, 
               <div
                 key={c.key}
                 className={cn('relative border-s transition-colors', dragOver === c.key && 'bg-primary/5')}
-                style={{ height, backgroundImage: `repeating-linear-gradient(to bottom, hsl(var(--border)) 0 1px, transparent 1px ${HOUR_PX / 2}px)` }}
                 onDragOver={(e) => { if (canMove) { e.preventDefault(); setDragOver(c.key); } }}
                 onDragLeave={() => setDragOver(null)}
                 onDrop={(e) => onDrop(e, c)}
+                onClick={(e) => {
+                  if (!onCreate || e.target !== e.currentTarget) return;
+                  const y = e.clientY - e.currentTarget.getBoundingClientRect().top;
+                  const minutes = Math.floor(((y / HOUR_PX) * 60) / 30) * 30;
+                  onCreate(c.date.startOf('day').plus({ hours: minH, minutes }), byStaff ? c.staff?._id : undefined);
+                }}
+                style={{ height, cursor: onCreate ? 'copy' : undefined, backgroundImage: `repeating-linear-gradient(to bottom, hsl(var(--border)) 0 1px, transparent 1px ${HOUR_PX / 2}px)` }}
               >
                 {/* closed shading */}
                 {hours.length > 0 && (!open?.enabled ? (
-                  <div className="absolute inset-0 bg-muted/60" aria-label={t('calendar.closed')} />
+                  <div className="pointer-events-none absolute inset-0 bg-muted/60" aria-label={t('calendar.closed')} />
                 ) : (
-                  closedBlocks(open.intervals, minH, maxH).map(([a, b2], i) => <div key={i} className="absolute inset-x-0 bg-muted/60" style={{ top: (a - minH * 60) * (HOUR_PX / 60), height: (b2 - a) * (HOUR_PX / 60) }} />)
+                  closedBlocks(open.intervals, minH, maxH).map(([a, b2], i) => <div key={i} className="pointer-events-none absolute inset-x-0 bg-muted/60" style={{ top: (a - minH * 60) * (HOUR_PX / 60), height: (b2 - a) * (HOUR_PX / 60) }} />)
                 ))}
                 {c.date.hasSame(now, 'day') && now.hour >= minH && now.hour < maxH && (
-                  <div className="absolute inset-x-0 z-[5] h-0.5 bg-rose-500" style={{ top: ((now.hour - minH) * 60 + now.minute) * (HOUR_PX / 60) }} aria-hidden />
+                  <div className="pointer-events-none absolute inset-x-0 z-[5] h-0.5 bg-rose-500" style={{ top: ((now.hour - minH) * 60 + now.minute) * (HOUR_PX / 60) }} aria-hidden />
                 )}
                 {layout(colBookings, tz).map(({ b, col, cols }) => {
                   const s = DateTime.fromISO(b.start).setZone(tz);
