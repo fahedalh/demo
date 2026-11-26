@@ -29,14 +29,20 @@ export const exceptionRouter = tenantCrud({
   create: body,
   update: z.object({ start: z.coerce.date(), end: z.coerce.date(), kind: z.enum(['closed', 'open']), reason: z.string().max(200) }).partial(),
   readPermission: ['business:read'],
-  writePermission: 'staff:manage',
+  writePermission: ['staff:manage', 'bookings:own'],
   sort: { start: 1 },
   extraFilter: (req) => {
     const f: Record<string, unknown> = { end: { $gte: new Date(Date.now() - 7 * 86_400_000) } };
+    if (!req.tenant!.permissions.has('staff:manage')) Object.assign(f, { scope: 'staff', ref: req.tenant!.staffId });
     if (typeof req.query.scope === 'string') f.scope = req.query.scope;
     return f;
   },
-  beforeWrite: async (req, data) => {
+  beforeWrite: async (req, data, mode) => {
+    const t = req.tenant!;
+    if (!t.permissions.has('staff:manage')) {
+      // Staff members may only manage their own time off.
+      if (mode === 'update' || data.scope !== 'staff' || String(data.ref) !== t.staffId) throw AppError.forbidden('You can only add time off for yourself');
+    }
     const scope = data.scope as keyof typeof models | 'business' | undefined;
     if (scope && scope !== 'business') await assertOwned(models[scope], [data.ref as string], tenantId(req), 'ref');
     if (scope === 'business') data.ref = undefined;

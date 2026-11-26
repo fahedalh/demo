@@ -16,7 +16,7 @@ interface CrudOptions {
   create: ZodTypeAny;
   update: ZodTypeAny;
   readPermission: Permission[];
-  writePermission: Permission;
+  writePermission: Permission | Permission[];
   searchFields?: string[];
   sort?: Record<string, 1 | -1>;
   populate?: string;
@@ -64,7 +64,7 @@ export function tenantCrud(o: CrudOptions) {
     can(...o.readPermission),
     validate({ params: idParams }),
     ah(async (req, res) => {
-      const q = o.model.findOne({ _id: req.params.id, business: tenantId(req) });
+      const q = o.model.findOne({ _id: req.params.id, business: tenantId(req), ...(o.extraFilter?.(req) ?? {}) });
       if (o.populate) q.populate(o.populate);
       const doc = await q.lean();
       if (!doc) throw AppError.notFound(o.name);
@@ -74,7 +74,7 @@ export function tenantCrud(o: CrudOptions) {
 
   r.post(
     '/',
-    can(o.writePermission),
+    can(...([] as Permission[]).concat(o.writePermission)),
     validate({ body: o.create }),
     ah(async (req, res) => {
       let data = req.body as Record<string, unknown>;
@@ -88,10 +88,10 @@ export function tenantCrud(o: CrudOptions) {
 
   r.patch(
     '/:id',
-    can(o.writePermission),
+    can(...([] as Permission[]).concat(o.writePermission)),
     validate({ params: idParams, body: o.update }),
     ah(async (req, res) => {
-      const doc = await o.model.findOne({ _id: req.params.id, business: tenantId(req) });
+      const doc = await o.model.findOne({ _id: req.params.id, business: tenantId(req), ...(o.extraFilter?.(req) ?? {}) });
       if (!doc) throw AppError.notFound(o.name);
       let data = req.body as Record<string, unknown>;
       if (o.beforeWrite) data = await o.beforeWrite(req, data, 'update');
@@ -105,10 +105,10 @@ export function tenantCrud(o: CrudOptions) {
 
   r.delete(
     '/:id',
-    can(o.writePermission),
+    can(...([] as Permission[]).concat(o.writePermission)),
     validate({ params: idParams }),
     ah(async (req, res) => {
-      const doc = await o.model.findOne({ _id: req.params.id, business: tenantId(req) });
+      const doc = await o.model.findOne({ _id: req.params.id, business: tenantId(req), ...(o.extraFilter?.(req) ?? {}) });
       if (!doc) throw AppError.notFound(o.name);
       if (o.softDelete) {
         doc.set({ isActive: false });

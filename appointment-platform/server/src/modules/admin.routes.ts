@@ -15,6 +15,7 @@ import { Business } from './businesses/business.model';
 import { Payment } from './payments/payment.model';
 import { Subscription } from './plans/plan.model';
 import { getSettings } from './settings/settings.model';
+import { ContactMessage } from './settings/contact.model';
 import { Role } from './users/role.model';
 import { User } from './users/user.model';
 
@@ -149,5 +150,25 @@ adminRouter.patch(
     await role.save();
     await audit(req, 'admin.role_updated', { type: 'Role', id: role._id }, { permissions: req.body.permissions });
     res.json(role);
+  }),
+);
+
+adminRouter.get(
+  '/messages',
+  validate({ query: z.object({ ...page, status: z.enum(['new', 'handled']).optional() }) }),
+  ah(async (req, res) => {
+    const { page: p, limit, status } = req.query as unknown as { page: number; limit: number; status?: string };
+    const filter = status ? { status } : {};
+    const [items, total] = await Promise.all([ContactMessage.find(filter).sort({ createdAt: -1 }).skip((p - 1) * limit).limit(limit).lean(), ContactMessage.countDocuments(filter)]);
+    res.json(paginate(items, total, p, limit));
+  }),
+);
+adminRouter.patch(
+  '/messages/:id',
+  validate({ params: z.object({ id: objectId }), body: z.object({ status: z.enum(['new', 'handled']) }) }),
+  ah(async (req, res) => {
+    const m = await ContactMessage.findByIdAndUpdate(req.params.id, { $set: { status: req.body.status } }, { new: true });
+    if (!m) throw AppError.notFound('Message');
+    res.json(m);
   }),
 );

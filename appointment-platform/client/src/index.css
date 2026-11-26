@@ -1,0 +1,68 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 224 30% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 224 30% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 30% 12%;
+    --primary: 243 75% 58%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 20% 96%;
+    --secondary-foreground: 224 30% 16%;
+    --muted: 220 20% 96%;
+    --muted-foreground: 220 10% 42%;
+    --accent: 168 70% 40%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 16% 90%;
+    --input: 220 16% 88%;
+    --ring: 243 75% 58%;
+    --radius: 0.875rem;
+    --brand: 79 70 229;
+  }
+  .dark {
+    --background: 224 28% 7%;
+    --foreground: 210 25% 96%;
+    --card: 224 26% 10%;
+    --card-foreground: 210 25% 96%;
+    --popover: 224 26% 10%;
+    --popover-foreground: 210 25% 96%;
+    --primary: 243 85% 70%;
+    --primary-foreground: 224 30% 8%;
+    --secondary: 224 20% 15%;
+    --secondary-foreground: 210 25% 96%;
+    --muted: 224 20% 15%;
+    --muted-foreground: 220 12% 65%;
+    --accent: 168 60% 50%;
+    --accent-foreground: 224 30% 8%;
+    --destructive: 0 70% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 224 18% 18%;
+    --input: 224 18% 22%;
+    --ring: 243 85% 70%;
+  }
+  * { @apply border-border; }
+  html { -webkit-tap-highlight-color: transparent; }
+  body { @apply bg-background text-foreground font-sans antialiased; font-feature-settings: 'cv11', 'ss01'; }
+  html[lang='ar'] body { @apply font-arabic; }
+  h1, h2, h3 { @apply tracking-tight; }
+  html[lang='ar'] h1, html[lang='ar'] h2, html[lang='ar'] h3 { letter-spacing: 0; }
+  :focus-visible { @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+  }
+}
+
+@layer components {
+  .text-gradient { @apply bg-brand-gradient bg-clip-text text-transparent; }
+  .num { direction: ltr; unicode-bidi: isolate; font-variant-numeric: tabular-nums; }
+  .scrollbar-thin { scrollbar-width: thin; }
+}
+
+.leaflet-container { @apply rounded-2xl; font: inherit; z-index: 0; }
