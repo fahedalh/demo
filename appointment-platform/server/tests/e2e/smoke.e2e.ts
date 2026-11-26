@@ -249,6 +249,19 @@ async function main() {
     await ar.getByText('مرحباً').first().waitFor({ timeout: 15000 });
     await shot(ar, '13-account-ar');
   });
+  await step('Arabic RTL switches stay inside their track and mirror', async () => {
+    await ar.goto(`${BASE}/account/profile`);
+    const sw = ar.locator('button[role=switch]').first();
+    await sw.waitFor();
+    if ((await sw.getAttribute('data-state')) !== 'checked') await sw.click();
+    await ar.waitForTimeout(300);
+    const track = await sw.boundingBox();
+    const thumb = await sw.locator('.switch-thumb').boundingBox();
+    if (!track || !thumb) throw new Error('switch not rendered');
+    if (thumb.x < track.x - 1 || thumb.x + thumb.width > track.x + track.width + 1) throw new Error('thumb outside track');
+    if (thumb.x - track.x > track.width / 2) throw new Error('checked thumb should sit at the start (left) side in RTL');
+    await shot(ar, '19-ar-profile-switches');
+  });
   await step('Arabic business page + wizard', async () => {
     await ar.goto(`${BASE}/b/bright-minds-tutoring`);
     await ar.getByText('اختر الخدمة').waitFor();

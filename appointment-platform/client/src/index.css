@@ -88,3 +88,9 @@ html[lang='ar'] .theme-serif .font-display { font-family: 'Amiri', 'IBM Plex San
 .theme-luxe .shadow-lift { box-shadow: 0 10px 30px -18px rgb(80 40 30 / 0.35); }
 .theme-professional .rounded-2xl { border-radius: 0.625rem; }
 .theme-civic .rounded-2xl { border-radius: 0.75rem; }
+
+/* Switch thumb: explicit positions so RTL mirrors (checked = start side) without variant conflicts. */
+.switch-thumb { transform: translateX(0); }
+.switch-thumb[data-state='checked'] { transform: translateX(20px); }
+[dir='rtl'] .switch-thumb { transform: translateX(20px); }
+[dir='rtl'] .switch-thumb[data-state='checked'] { transform: translateX(0); }

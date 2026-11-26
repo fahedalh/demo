@@ -105,11 +105,19 @@ notifications, analytics and an optional AI layer. Details: `docs/PRD.md`.
 - Admin overview: welcome header, period-over-period deltas, pending-approvals panel with one-click
   approve. Business overview: deltas for bookings, revenue, new customers.
 
+## 4c. Session 2b — MVP packaging
+- `npm run demo`: one command runs the whole MVP (in-memory MongoDB, seed, API + built client).
+- `tests/e2e/walkthrough.e2e.ts`: records a captioned video tour of the MVP.
+- Fixed: RTL switch thumbs escaped their track; noisy period deltas on tiny baselines (now hidden
+  below 5 or beyond 5×); remaining hard-coded English labels translated; booking answers show field
+  labels instead of keys.
+- Code also lives in `fahedalh/Multipurpose-appointment-booking` (repository root = this folder).
+
 ## 5. Current status
 - Server: typechecks; 27 unit/smoke tests pass; **7 API integration tests pass against real MongoDB**
   (`npm run test:integration`), incl. two concurrent bookings for one slot → exactly one 201 + one 409.
 - Client: typechecks; production build OK (route-level code splitting); 7 tests pass (incl. EN/AR key parity).
-- **E2E (`npm run test:e2e`): 17/17 flows pass (incl. luxe/clinical/hospitality themes and calendar click-to-book) with zero browser console/API errors** — EN landing,
+- **E2E (`npm run test:e2e`): 18/18 flows pass (incl. RTL switch geometry check) (incl. luxe/clinical/hospitality themes and calendar click-to-book) with zero browser console/API errors** — EN landing,
   AI search, guest salon booking (provider step, pay at location), clinic booking with required
   custom fields + sandbox deposit payment, owner overview/calendar/reservations/services/settings,
   admin overview & pending approvals, Arabic RTL landing/account/business page, mobile (no overflow).

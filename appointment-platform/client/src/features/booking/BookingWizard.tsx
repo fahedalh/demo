@@ -382,7 +382,7 @@ export function BookingWizard({ data, initialService, initialStaff, onDone }: { 
                 )}
               </div>
               {dueNow > 0 && <p className="text-sm font-medium">{settings.payment.mode === 'full' ? t('booking.fullDue', { amount: money(dueNow, business.currency) }) : t('booking.depositDue', { amount: money(dueNow, business.currency) })}</p>}
-              {data.payments.provider === 'test' && <Badge tone="warning">Sandbox</Badge>}
+              {data.payments.provider === 'test' && <Badge tone="warning">{t('common.sandbox')}</Badge>}
               <Summary />
               <div className="flex justify-between gap-2">
                 <Button variant="ghost" onClick={back}><ArrowLeft className="rtl:rotate-180" />{t('actions.back')}</Button>

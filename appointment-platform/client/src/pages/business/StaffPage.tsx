@@ -113,7 +113,7 @@ export function StaffPage() {
               <Field label={t('staff.jobTitle')} htmlFor="st-title"><Input id="st-title" value={form.title} onChange={(e) => set('title', e.target.value)} /></Field>
               <Field label={tc('common.email')} error={err.email} htmlFor="st-email"><Input id="st-email" type="email" value={form.email} onChange={(e) => set('email', e.target.value)} /></Field>
               <Field label={tc('common.phone')} htmlFor="st-phone"><Input id="st-phone" dir="ltr" value={form.phone} onChange={(e) => set('phone', e.target.value)} /></Field>
-              <Field label="Avatar URL" error={err.avatar} htmlFor="st-av"><Input id="st-av" dir="ltr" value={form.avatar} onChange={(e) => set('avatar', e.target.value)} /></Field>
+              <Field label={tc('common.avatarUrl')} error={err.avatar} htmlFor="st-av"><Input id="st-av" dir="ltr" value={form.avatar} onChange={(e) => set('avatar', e.target.value)} /></Field>
               <Field label={tc('common.color')} htmlFor="st-color"><ColorInput id="st-color" value={form.color} onChange={(v) => set('color', v)} /></Field>
               <Field label={t('staff.bio')} htmlFor="st-bio" className="sm:col-span-2"><Textarea id="st-bio" value={form.bio} onChange={(e) => set('bio', e.target.value)} /></Field>
             </div>

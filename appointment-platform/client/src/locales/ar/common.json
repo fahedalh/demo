@@ -127,7 +127,20 @@
     "minutes": "دقيقة",
     "hours": "ساعة",
     "days": "يوم",
-    "percent": "٪"
+    "percent": "٪",
+    "avatarUrl": "رابط الصورة",
+    "latitude": "خط العرض",
+    "longitude": "خط الطول",
+    "sandbox": "وضع الاختبار",
+    "sort": "الترتيب",
+    "key": "المعرّف",
+    "business": "النشاط",
+    "interval": "دورة الفوترة",
+    "bookingsLabel": "الحجوزات",
+    "subscriptionsLabel": "الاشتراكات",
+    "plan": "الباقة",
+    "customDomain": "نطاق مخصص",
+    "customDomainHint": "booking.yourdomain.com — وجّه سجل CNAME إلى المنصة"
   },
   "days": {
     "0": "الأحد",

@@ -47,7 +47,7 @@ export function ProfilePage() {
             <Field label={t('common.name')} error={form.formState.errors.name?.message} htmlFor="p-name"><Input id="p-name" {...form.register('name')} /></Field>
             <Field label={t('common.email')} htmlFor="p-email"><Input id="p-email" value={user.email} disabled /></Field>
             <Field label={t('common.phone')} htmlFor="p-phone"><Input id="p-phone" dir="ltr" {...form.register('phone')} /></Field>
-            <Field label="Avatar URL" error={form.formState.errors.avatar?.message} htmlFor="p-avatar"><Input id="p-avatar" dir="ltr" {...form.register('avatar')} /></Field>
+            <Field label={t('common.avatarUrl')} error={form.formState.errors.avatar?.message} htmlFor="p-avatar"><Input id="p-avatar" dir="ltr" {...form.register('avatar')} /></Field>
             <Field label={t('account.language')} htmlFor="p-locale">
               <NativeSelect id="p-locale" {...form.register('locale')}><option value="en">English</option><option value="ar">العربية</option></NativeSelect>
             </Field>

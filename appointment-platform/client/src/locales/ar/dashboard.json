@@ -51,7 +51,8 @@
     "setupStaff": "أضف فريقك",
     "setupHours": "حدد ساعات العمل",
     "setupShare": "شارك صفحة الحجز",
-    "vsPrevious": "{{value}} مقارنة بالفترة السابقة"
+    "vsPrevious": "{{value}} مقارنة بالفترة السابقة",
+    "bookedValue": "{{amount}} قيمة الحجوزات"
   },
   "calendar": {
     "title": "التقويم",

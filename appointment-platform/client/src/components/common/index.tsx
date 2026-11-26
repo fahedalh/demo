@@ -269,9 +269,11 @@ export function Section({ title, description, children, actions }: { title: Reac
 }
 
 /** Period-over-period change, e.g. "+12%" in green. Renders nothing without a baseline. */
-export function Delta({ current, previous, invert }: { current: number; previous?: number; invert?: boolean }) {
-  if (previous === undefined || previous === 0) return null;
+export function Delta({ current, previous, invert, minBaseline = 5 }: { current: number; previous?: number; invert?: boolean; minBaseline?: number }) {
+  // A tiny baseline produces meaningless swings (e.g. 1 → 25 = +2400%); show nothing instead.
+  if (previous === undefined || previous < minBaseline) return null;
   const change = (current - previous) / previous;
+  if (Math.abs(change) > 5) return null; // implausible swing → likely sparse data
   const up = change >= 0;
   const good = invert ? !up : up;
   return (

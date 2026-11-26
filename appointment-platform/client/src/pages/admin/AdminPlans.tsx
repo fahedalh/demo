@@ -75,7 +75,7 @@ export function AdminPlans() {
         <DialogContent title={editing ? t('admin.planEdit') : t('admin.planNew')} size="lg">
           <form className="space-y-5" onSubmit={(e) => { e.preventDefault(); void save(); }} noValidate>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Key" error={errors.key} htmlFor="pl-key" required><Input id="pl-key" dir="ltr" value={f.key} onChange={(e) => setF({ ...f, key: e.target.value.toLowerCase() })} /></Field>
+              <Field label={tc('common.key')} error={errors.key} htmlFor="pl-key" required><Input id="pl-key" dir="ltr" value={f.key} onChange={(e) => setF({ ...f, key: e.target.value.toLowerCase() })} /></Field>
               <Field label={tc('common.name')} error={errors.name} htmlFor="pl-name" required><Input id="pl-name" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></Field>
               <Field label={tc('common.description')} htmlFor="pl-desc" className="sm:col-span-2"><Input id="pl-desc" value={f.description ?? ''} onChange={(e) => setF({ ...f, description: e.target.value })} /></Field>
               <Field label={t('admin.monthly')} htmlFor="pl-m"><Input id="pl-m" type="number" min={0} value={f.price.monthly} onChange={(e) => setF({ ...f, price: { ...f.price, monthly: Number(e.target.value) } })} /></Field>

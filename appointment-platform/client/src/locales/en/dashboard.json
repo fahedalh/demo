@@ -51,7 +51,8 @@
     "setupStaff": "Add your team",
     "setupHours": "Set your opening hours",
     "setupShare": "Share your booking page",
-    "vsPrevious": "{{value}} vs previous period"
+    "vsPrevious": "{{value}} vs previous period",
+    "bookedValue": "{{amount}} booked"
   },
   "calendar": {
     "title": "Calendar",

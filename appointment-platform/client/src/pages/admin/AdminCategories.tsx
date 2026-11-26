@@ -118,7 +118,7 @@ export function AdminCategories() {
                   {THEME_PRESETS.map((p) => <option key={p} value={p}>{t(`settings.themes.${p}`)}</option>)}
                 </NativeSelect>
               </Field>
-              <Field label="Sort" htmlFor="c-sort"><Input id="c-sort" type="number" value={f.sortOrder} onChange={(e) => setF({ ...f, sortOrder: Number(e.target.value) })} /></Field>
+              <Field label={tc('common.sort')} htmlFor="c-sort"><Input id="c-sort" type="number" value={f.sortOrder} onChange={(e) => setF({ ...f, sortOrder: Number(e.target.value) })} /></Field>
             </div>
 
             <fieldset className="space-y-3">

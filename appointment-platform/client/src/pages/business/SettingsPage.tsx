@@ -159,8 +159,8 @@ function ProfileTab() {
           <Field label={tc('common.address')} htmlFor="sp-l1" className="sm:col-span-2"><Input id="sp-l1" value={f.line1} onChange={(e) => set('line1', e.target.value)} /></Field>
           <Field label={tc('common.city')} htmlFor="sp-city"><Input id="sp-city" value={f.city} onChange={(e) => set('city', e.target.value)} /></Field>
           <Field label={tc('common.country')} htmlFor="sp-country"><Input id="sp-country" value={f.country} onChange={(e) => set('country', e.target.value)} /></Field>
-          <Field label="Latitude" htmlFor="sp-lat"><Input id="sp-lat" type="number" step="any" dir="ltr" value={f.lat} onChange={(e) => set('lat', e.target.value)} /></Field>
-          <Field label="Longitude" htmlFor="sp-lng"><Input id="sp-lng" type="number" step="any" dir="ltr" value={f.lng} onChange={(e) => set('lng', e.target.value)} /></Field>
+          <Field label={tc('common.latitude')} htmlFor="sp-lat"><Input id="sp-lat" type="number" step="any" dir="ltr" value={f.lat} onChange={(e) => set('lat', e.target.value)} /></Field>
+          <Field label={tc('common.longitude')} htmlFor="sp-lng"><Input id="sp-lng" type="number" step="any" dir="ltr" value={f.lng} onChange={(e) => set('lng', e.target.value)} /></Field>
         </div>
       </Section>
       <Section title={tc('common.time')}>
@@ -204,7 +204,7 @@ function BrandingTab() {
         <fieldset disabled={locked} className="space-y-4 disabled:opacity-60">
           <Field label={t('settings.primaryColor')}><ColorInput value={f.primaryColor} onChange={(v) => setF({ ...f, primaryColor: v })} /></Field>
           <Field label={t('settings.accentColor')}><ColorInput value={f.accentColor} onChange={(v) => setF({ ...f, accentColor: v })} /></Field>
-          <Field label="Custom domain" hint="booking.yourdomain.com — point a CNAME to the platform"><Input dir="ltr" value={f.customDomain} onChange={(e) => setF({ ...f, customDomain: e.target.value })} /></Field>
+          <Field label={tc('common.customDomain')} hint={tc('common.customDomainHint')}><Input dir="ltr" value={f.customDomain} onChange={(e) => setF({ ...f, customDomain: e.target.value })} /></Field>
           <label className="flex items-center gap-3 text-sm"><Switch checked={f.hidePlatformBranding} onCheckedChange={(c) => setF({ ...f, hidePlatformBranding: c })} />{t('settings.hideBranding')}</label>
         </fieldset>
         <Button type="submit" className="mt-5" loading={saving}>{tc('actions.save')}</Button>

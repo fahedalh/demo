@@ -127,7 +127,20 @@
     "minutes": "minutes",
     "hours": "hours",
     "days": "days",
-    "percent": "%"
+    "percent": "%",
+    "avatarUrl": "Photo URL",
+    "latitude": "Latitude",
+    "longitude": "Longitude",
+    "sandbox": "Test mode",
+    "sort": "Order",
+    "key": "Key",
+    "business": "Business",
+    "interval": "Billing period",
+    "bookingsLabel": "Bookings",
+    "subscriptionsLabel": "Subscriptions",
+    "plan": "Plan",
+    "customDomain": "Custom domain",
+    "customDomainHint": "booking.yourdomain.com — point a CNAME record to the platform"
   },
   "days": {
     "0": "Sunday",

@@ -14,7 +14,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test:integration": "npm run build -w @bookly/shared --prefix .. && INTEGRATION=1 vitest run tests/api.integration.test.ts",
     "test:e2e": "npm run build -w @bookly/shared --prefix .. && npm run build -w client --prefix .. && tsx tests/e2e/smoke.e2e.ts",
-    "db:dev": "node scripts/mongo-dev.cjs"
+    "db:dev": "node scripts/mongo-dev.cjs",
+    "demo": "npm run build -w @bookly/shared --prefix .. && tsx scripts/demo.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.14.0",

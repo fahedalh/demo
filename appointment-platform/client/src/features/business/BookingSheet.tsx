@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { Input, Textarea } from '@/components/ui/input';
 import { Avatar, Separator } from '@/components/ui/misc';
 import { useTenant } from '@/contexts/TenantContext';
+import { useLocalized } from '@/hooks/useLocalized';
 import { SlotPicker } from '@/features/booking/SlotPicker';
 import { api, errorMessage } from '@/services/api';
 import type { Booking, Slot } from '@/types';
@@ -27,6 +28,11 @@ export function BookingSheet({ bookingId, onOpenChange }: { bookingId: string | 
   const { t } = useTranslation('dashboard');
   const tc = useTranslation().t;
   const { id, can, terms, business } = useTenant();
+  const loc = useLocalized();
+  const fieldLabel = (key: string) => {
+    const f = business.category?.bookingFlow?.customFields?.find((x) => x.key === key);
+    return f ? loc(f.label) : key.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (c) => c.toUpperCase());
+  };
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ['bookings', id, 'detail', bookingId], queryFn: () => api.get<Booking>(`/businesses/${id}/bookings/${bookingId}`), enabled: !!bookingId });
   const [action, setAction] = useState<(typeof ACTIONS)[number] | null>(null);
@@ -102,7 +108,7 @@ export function BookingSheet({ bookingId, onOpenChange }: { bookingId: string | 
               <section>
                 <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t('bookings.answers')}</h3>
                 <dl className="space-y-1 text-sm">
-                  {Object.entries(b.answers ?? {}).map(([k, v]) => <div key={k} className="flex justify-between gap-4"><dt className="text-muted-foreground">{k}</dt><dd className="text-end font-medium">{String(v)}</dd></div>)}
+                  {Object.entries(b.answers ?? {}).map(([k, v]) => <div key={k} className="flex justify-between gap-4"><dt className="text-muted-foreground">{fieldLabel(k)}</dt><dd className="text-end font-medium">{String(v)}</dd></div>)}
                 </dl>
                 {b.customerNote && <p className="mt-2 rounded-xl bg-muted/60 p-3 text-sm"><span className="block text-xs font-semibold">{t('bookings.customerNote')}</span>{b.customerNote}</p>}
               </section>

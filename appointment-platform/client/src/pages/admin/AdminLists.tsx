@@ -164,16 +164,16 @@ export function AdminPayments() {
   const list = useList<Payment>('payments', '/admin/payments', { purpose: purpose || undefined, page });
   return (
     <>
-      <PageHeader title={t('admin.nav.payments')} actions={<NativeSelect className="w-48" value={purpose} onChange={(e) => { setPurpose(e.target.value); setPage(1); }} aria-label="Purpose"><option value="">{tc('common.all')}</option><option value="booking">Bookings</option><option value="subscription">Subscriptions</option></NativeSelect>} />
+      <PageHeader title={t('admin.nav.payments')} actions={<NativeSelect className="w-48" value={purpose} onChange={(e) => { setPurpose(e.target.value); setPage(1); }} aria-label="Purpose"><option value="">{tc('common.all')}</option><option value="booking">{tc('common.bookingsLabel')}</option><option value="subscription">{tc('common.subscriptionsLabel')}</option></NativeSelect>} />
       <QueryView query={list}>
         {(d) => (
           <>
-            <Table head={[tc('common.date'), 'Business', t('payments.kind'), t('payments.method'), tc('common.amount'), tc('common.status')]}>
+            <Table head={[tc('common.date'), tc('common.business'), t('payments.kind'), t('payments.method'), tc('common.amount'), tc('common.status')]}>
               {d.items.map((p) => (
                 <tr key={p._id}>
                   <td className="px-4 py-3">{fmtDateTime(p.paidAt ?? p.createdAt)}<p className="num text-xs text-muted-foreground">{p.invoiceNumber ?? p.booking?.reference}</p></td>
                   <td className="px-4 py-3">{p.business?.name}</td>
-                  <td className="px-4 py-3">{t(`payments.kinds.${p.kind}`)}{p.purpose === 'subscription' && <Badge tone="info" className="ms-2">plan</Badge>}</td>
+                  <td className="px-4 py-3">{t(`payments.kinds.${p.kind}`)}{p.purpose === 'subscription' && <Badge tone="info" className="ms-2">{tc('common.plan')}</Badge>}</td>
                   <td className="px-4 py-3">{t(`payments.methods.${p.method}`)} <span className="text-xs text-muted-foreground">({p.provider})</span></td>
                   <td className="num px-4 py-3 font-semibold">{money(p.amount, p.currency)}</td>
                   <td className="px-4 py-3"><StatusBadge status={p.status} /></td>
@@ -209,7 +209,7 @@ export function AdminSubscriptions() {
       <QueryView query={list}>
         {(d) => (
           <>
-            <Table head={['Business', t('admin.plan'), 'Interval', tc('common.status'), t('admin.periodEnd')]}>
+            <Table head={[tc('common.business'), t('admin.plan'), tc('common.interval'), tc('common.status'), t('admin.periodEnd')]}>
               {d.items.map((s) => (
                 <tr key={s._id}>
                   <td className="px-4 py-3 font-medium">{s.business?.name}</td>
@@ -230,6 +230,7 @@ export function AdminSubscriptions() {
 
 export function AdminAudit() {
   const { t } = useTranslation('dashboard');
+  const tc = useTranslation().t;
   useDocumentTitle(t('admin.nav.audit'));
   const [q, setQ] = useState('');
   const dq = useDebounce(q);
@@ -245,7 +246,7 @@ export function AdminAudit() {
       <QueryView query={list}>
         {(d) => (
           <>
-            <Table head={[t('admin.when'), t('admin.actor'), t('admin.action'), t('admin.entity'), 'Business', 'IP']}>
+            <Table head={[t('admin.when'), t('admin.actor'), t('admin.action'), t('admin.entity'), tc('common.business'), 'IP']}>
               {d.items.map((l) => (
                 <tr key={l._id}>
                   <td className="whitespace-nowrap px-4 py-3 text-xs">{fmtDateTime(l.createdAt)}</td>

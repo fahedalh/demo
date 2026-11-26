@@ -63,7 +63,7 @@ export function OverviewPage() {
             )}
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <StatCard label={t('overview.kpiBookings')} value={d.kpis.bookings} hint={<Delta current={d.kpis.bookings} previous={d.previous?.bookings} />} icon={<CalendarCheck />} />
-              {can('payments:read') && <StatCard label={t('overview.kpiRevenue')} value={money(d.kpis.revenue, d.currency)} hint={<span className="flex flex-wrap items-center gap-1.5"><Delta current={d.kpis.revenue} previous={d.previous?.revenue} />{money(d.kpis.bookedValue, d.currency)} booked</span>} icon={<Coins />} tone="accent" />}
+              {can('payments:read') && <StatCard label={t('overview.kpiRevenue')} value={money(d.kpis.revenue, d.currency)} hint={<span className="flex flex-wrap items-center gap-1.5"><Delta current={d.kpis.revenue} previous={d.previous?.revenue} />{t('overview.bookedValue', { amount: money(d.kpis.bookedValue, d.currency) })}</span>} icon={<Coins />} tone="accent" />}
               <StatCard label={t('overview.kpiCustomers')} value={d.kpis.newCustomers} hint={<Delta current={d.kpis.newCustomers} previous={d.previous?.newCustomers} />} icon={<UserPlus />} tone="amber" />
               <StatCard label={t('overview.kpiNoShow')} value={pct(d.kpis.noShowRate)} hint={`${t('overview.kpiCancel')}: ${pct(d.kpis.cancellationRate)}`} icon={<UserX />} tone="rose" />
             </div>

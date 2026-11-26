@@ -18,6 +18,16 @@ appointment-platform/
 └── PROJECT_CONTEXT.md   Living status document — read this first
 ```
 
+## Try the MVP in one command
+
+```bash
+cd appointment-platform
+npm install
+npm run demo        # → http://localhost:4000  (throwaway MongoDB + demo data, nothing to install)
+```
+
+Everything runs in memory and resets when you stop it. Log in with the demo accounts below.
+
 ## Quick start (local)
 
 Requirements: Node 20+, MongoDB 6+ (local or Atlas — or run `npm run db:dev` for a throwaway local replica set). Redis is optional.
@@ -66,6 +76,7 @@ docker compose exec -e SEED_FORCE=true server node server/dist/scripts/seed.js  
 | `npm test` | Server unit + smoke tests, client tests |
 | `npm run test:integration` | API tests against a throwaway MongoDB (concurrency, isolation, auth) |
 | `npm run test:e2e` | Seeds a throwaway DB, serves API + built client, drives Chromium through 13 user flows, saves screenshots |
+| `npm run demo` | Builds the web app and runs the full MVP on :4000 with a throwaway database and demo data |
 | `npm run db:dev` | Starts a local throwaway MongoDB replica set on :27017 |
 | `npm run typecheck` | Type-checks server and client |
 

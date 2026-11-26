@@ -60,10 +60,11 @@ export function Separator({ className }: { className?: string }) {
 export const Switch = forwardRef<HTMLButtonElement, SwitchPrimitive.SwitchProps>(({ className, ...p }, ref) => (
   <SwitchPrimitive.Root
     ref={ref}
+    dir="ltr" /* thumb position handled in index.css so it mirrors correctly in RTL */
     className={cn('peer inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors data-[state=checked]:bg-primary data-[state=unchecked]:bg-input disabled:opacity-50', className)}
     {...p}
   >
-    <SwitchPrimitive.Thumb className="pointer-events-none block h-5 w-5 rounded-full bg-background shadow-lg transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0 rtl:data-[state=checked]:-translate-x-5" />
+    <SwitchPrimitive.Thumb className="switch-thumb pointer-events-none block h-5 w-5 rounded-full bg-background shadow-lg transition-transform" />
   </SwitchPrimitive.Root>
 ));
 Switch.displayName = 'Switch';
