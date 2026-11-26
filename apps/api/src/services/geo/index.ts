@@ -50,12 +50,19 @@ function pick(): GeoProvider {
 
 const provider = pick();
 
-async function withFallback<T>(op: string, primary: () => Promise<T>, fallback: () => Promise<T>): Promise<T> {
+async function withFallback<T>(
+  op: string,
+  primary: () => Promise<T>,
+  fallback: () => Promise<T>,
+): Promise<T> {
   if (provider === localProvider) return fallback();
   try {
     return await primary();
   } catch (err) {
-    logger.warn({ err: (err as Error).message, provider: provider.name, op }, 'geo provider failed, using local fallback');
+    logger.warn(
+      { err: (err as Error).message, provider: provider.name, op },
+      'geo provider failed, using local fallback',
+    );
     return fallback();
   }
 }
@@ -66,18 +73,30 @@ export const geo = {
   providerName: provider.name,
 
   autocomplete(query: string, opts: { near?: LatLng; locale: string }) {
-    return withFallback('autocomplete', () => provider.autocomplete(query, opts), () => localProvider.autocomplete(query, opts));
+    return withFallback(
+      'autocomplete',
+      () => provider.autocomplete(query, opts),
+      () => localProvider.autocomplete(query, opts),
+    );
   },
 
   reverse(point: LatLng, locale: string) {
-    return withFallback('reverse', () => provider.reverse(point, locale), () => localProvider.reverse(point, locale));
+    return withFallback(
+      'reverse',
+      () => provider.reverse(point, locale),
+      () => localProvider.reverse(point, locale),
+    );
   },
 
   async route(from: LatLng, to: LatLng): Promise<Route> {
     const key = rk(`route:${provider.name}:${r5(from.lat)},${r5(from.lng)}:${r5(to.lat)},${r5(to.lng)}`);
     const cached = await redis.get(key).catch(() => null);
     if (cached) return JSON.parse(cached) as Route;
-    const route = await withFallback('route', () => provider.route(from, to), () => localProvider.route(from, to));
+    const route = await withFallback(
+      'route',
+      () => provider.route(from, to),
+      () => localProvider.route(from, to),
+    );
     await redis.set(key, JSON.stringify(route), 'EX', 600).catch(() => undefined);
     return route;
   },

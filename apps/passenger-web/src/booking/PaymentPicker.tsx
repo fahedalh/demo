@@ -18,10 +18,16 @@ export interface PaymentMethodDTO {
 }
 
 export function usePaymentMethods() {
-  return useQuery({ queryKey: ['payment-methods'], queryFn: () => api.get<{ items: PaymentMethodDTO[]; provider: string }>('/payments/methods') });
+  return useQuery({
+    queryKey: ['payment-methods'],
+    queryFn: () => api.get<{ items: PaymentMethodDTO[]; provider: string }>('/payments/methods'),
+  });
 }
 export function useWallet() {
-  return useQuery({ queryKey: ['wallet'], queryFn: () => api.get<{ balance: number; currency: string; transactions: any[] }>('/payments/wallet') });
+  return useQuery({
+    queryKey: ['wallet'],
+    queryFn: () => api.get<{ balance: number; currency: string; transactions: any[] }>('/payments/wallet'),
+  });
 }
 
 /** Picks a sensible default payment method once methods load. */
@@ -44,7 +50,15 @@ export function usePaymentLabel() {
   return t(`ride.payment.${b.paymentType}`);
 }
 
-export function PaymentPicker({ onDone, value, onChange }: { onDone?: () => void; value?: { type: PaymentType; id: string | null }; onChange?: (v: { type: PaymentType; id: string | null }) => void }) {
+export function PaymentPicker({
+  onDone,
+  value,
+  onChange,
+}: {
+  onDone?: () => void;
+  value?: { type: PaymentType; id: string | null };
+  onChange?: (v: { type: PaymentType; id: string | null }) => void;
+}) {
   const { t } = useTranslation();
   const f = useFormat();
   const b = useBooking();
@@ -56,8 +70,26 @@ export function PaymentPicker({ onDone, value, onChange }: { onDone?: () => void
     else b.set({ paymentType: type, paymentMethodId: id });
     onDone?.();
   };
-  const Row = ({ active, icon, title, sub, onClick }: { active: boolean; icon: React.ReactNode; title: string; sub?: string; onClick: () => void }) => (
-    <button onClick={onClick} className={cn('flex w-full items-center gap-3 rounded-2xl p-3 text-start transition', active ? 'bg-surface-2' : 'hover:bg-surface-2')}>
+  const Row = ({
+    active,
+    icon,
+    title,
+    sub,
+    onClick,
+  }: {
+    active: boolean;
+    icon: React.ReactNode;
+    title: string;
+    sub?: string;
+    onClick: () => void;
+  }) => (
+    <button
+      onClick={onClick}
+      className={cn(
+        'flex w-full items-center gap-3 rounded-2xl p-3 text-start transition',
+        active ? 'bg-surface-2' : 'hover:bg-surface-2',
+      )}
+    >
       <span className="grid size-10 place-items-center rounded-xl bg-surface ring-1 ring-line">{icon}</span>
       <span className="min-w-0 flex-1">
         <span className="block font-semibold">{title}</span>
@@ -69,13 +101,35 @@ export function PaymentPicker({ onDone, value, onChange }: { onDone?: () => void
   return (
     <div className="space-y-1">
       {data?.items.map((m) => (
-        <Row key={m.id} active={current.type === 'CARD' && current.id === m.id} icon={<CreditCard className="size-5" />} title={`${(m.brand ?? 'card').toUpperCase()} •••• ${m.last4}`} sub={`${String(m.expMonth).padStart(2, '0')}/${String(m.expYear).slice(-2)}`} onClick={() => pick('CARD', m.id)} />
+        <Row
+          key={m.id}
+          active={current.type === 'CARD' && current.id === m.id}
+          icon={<CreditCard className="size-5" />}
+          title={`${(m.brand ?? 'card').toUpperCase()} •••• ${m.last4}`}
+          sub={`${String(m.expMonth).padStart(2, '0')}/${String(m.expYear).slice(-2)}`}
+          onClick={() => pick('CARD', m.id)}
+        />
       ))}
-      <Row active={current.type === 'WALLET'} icon={<Wallet className="size-5" />} title={t('ride.payment.WALLET')} sub={wallet ? f.money(wallet.balance, wallet.currency) : undefined} onClick={() => pick('WALLET')} />
-      {!value && <Row active={current.type === 'CASH'} icon={<Banknote className="size-5" />} title={t('ride.payment.CASH')} onClick={() => pick('CASH')} />}
+      <Row
+        active={current.type === 'WALLET'}
+        icon={<Wallet className="size-5" />}
+        title={t('ride.payment.WALLET')}
+        sub={wallet ? f.money(wallet.balance, wallet.currency) : undefined}
+        onClick={() => pick('WALLET')}
+      />
+      {!value && (
+        <Row
+          active={current.type === 'CASH'}
+          icon={<Banknote className="size-5" />}
+          title={t('ride.payment.CASH')}
+          onClick={() => pick('CASH')}
+        />
+      )}
       <details className="group mt-3 rounded-2xl border border-line p-3">
         <summary className="cursor-pointer list-none font-semibold">+ {t('wallet.addCard')}</summary>
-        <div className="mt-3"><AddCardForm onAdded={(id) => pick('CARD', id)} /></div>
+        <div className="mt-3">
+          <AddCardForm onAdded={(id) => pick('CARD', id)} />
+        </div>
       </details>
     </div>
   );

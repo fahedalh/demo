@@ -11,7 +11,9 @@ const RideDetailPage = lazy(() => import('./pages/RideDetail').then((m) => ({ de
 const WalletPage = lazy(() => import('./pages/Wallet').then((m) => ({ default: m.WalletPage })));
 const AccountPage = lazy(() => import('./pages/Account').then((m) => ({ default: m.AccountPage })));
 const SupportPage = lazy(() => import('./pages/Support').then((m) => ({ default: m.SupportPage })));
-const NotificationsPage = lazy(() => import('./pages/Notifications').then((m) => ({ default: m.NotificationsPage })));
+const NotificationsPage = lazy(() =>
+  import('./pages/Notifications').then((m) => ({ default: m.NotificationsPage })),
+);
 
 function Gate() {
   const ready = useBootstrapSession();
@@ -21,7 +23,13 @@ function Gate() {
     return (
       <AuthScreen
         role="PASSENGER"
-        demo={[{ identifier: 'passenger@masar.demo', password: 'Passenger123!', label: 'Sara · passenger@masar.demo' }]}
+        demo={[
+          {
+            identifier: 'passenger@masar.demo',
+            password: 'Passenger123!',
+            label: 'Sara · passenger@masar.demo',
+          },
+        ]}
         aside={<AuthAside />}
       />
     );
@@ -30,12 +38,54 @@ function Gate() {
     <Routes>
       <Route element={<Shell />}>
         <Route index element={<HomePage />} />
-        <Route path="rides" element={<Suspense fallback={<FullScreenLoader />}><RidesPage /></Suspense>} />
-        <Route path="rides/:id" element={<Suspense fallback={<FullScreenLoader />}><RideDetailPage /></Suspense>} />
-        <Route path="wallet" element={<Suspense fallback={<FullScreenLoader />}><WalletPage /></Suspense>} />
-        <Route path="account" element={<Suspense fallback={<FullScreenLoader />}><AccountPage /></Suspense>} />
-        <Route path="support" element={<Suspense fallback={<FullScreenLoader />}><SupportPage /></Suspense>} />
-        <Route path="notifications" element={<Suspense fallback={<FullScreenLoader />}><NotificationsPage /></Suspense>} />
+        <Route
+          path="rides"
+          element={
+            <Suspense fallback={<FullScreenLoader />}>
+              <RidesPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="rides/:id"
+          element={
+            <Suspense fallback={<FullScreenLoader />}>
+              <RideDetailPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="wallet"
+          element={
+            <Suspense fallback={<FullScreenLoader />}>
+              <WalletPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="account"
+          element={
+            <Suspense fallback={<FullScreenLoader />}>
+              <AccountPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="support"
+          element={
+            <Suspense fallback={<FullScreenLoader />}>
+              <SupportPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="notifications"
+          element={
+            <Suspense fallback={<FullScreenLoader />}>
+              <NotificationsPage />
+            </Suspense>
+          }
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

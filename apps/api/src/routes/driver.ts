@@ -20,7 +20,14 @@ import { rideInclude, toRideDTO, toVehicleDTO, vehicleInclude } from '../service
 import { ALLOWED_MIME, deleteStoredFile, saveFile, sniffMime } from '../services/storage';
 import { driverLocations } from '../services/driver-locations';
 import { dispatch } from '../services/dispatch.service';
-import { cancelRide, completeTrip, driverArrived, loadRide, markDriverArriving, startTrip } from '../services/ride.service';
+import {
+  cancelRide,
+  completeTrip,
+  driverArrived,
+  loadRide,
+  markDriverArriving,
+  startTrip,
+} from '../services/ride.service';
 import { postWalletTx } from '../services/wallet.service';
 import { emitToAdmins, emitToUser, getIO } from '../realtime/io';
 
@@ -39,7 +46,14 @@ async function profileOf(userId: string) {
   return p;
 }
 
-const REQUIRED_DOCS = ['PROFILE_PHOTO', 'DRIVING_LICENSE', 'NATIONAL_ID', 'VEHICLE_REGISTRATION', 'INSURANCE', 'VEHICLE_PHOTO'] as const;
+const REQUIRED_DOCS = [
+  'PROFILE_PHOTO',
+  'DRIVING_LICENSE',
+  'NATIONAL_ID',
+  'VEHICLE_REGISTRATION',
+  'INSURANCE',
+  'VEHICLE_PHOTO',
+] as const;
 
 driverRouter.get('/profile', async (req, res) => {
   const p = await prisma.driverProfile.findUnique({
@@ -99,15 +113,26 @@ driverRouter.put('/onboarding', validate(driverOnboardingSchema), async (req, re
 driverRouter.post('/submit', async (req, res) => {
   const p = await prisma.driverProfile.findUniqueOrThrow({
     where: { userId: req.user!.id },
-    include: { vehicles: { where: { deletedAt: null } }, documents: { where: { deletedAt: null, status: { not: 'REJECTED' } } } },
+    include: {
+      vehicles: { where: { deletedAt: null } },
+      documents: { where: { deletedAt: null, status: { not: 'REJECTED' } } },
+    },
   });
-  if (!['PENDING', 'NEEDS_INFO', 'REJECTED'].includes(p.verificationStatus)) throw conflict('Your application is already submitted');
+  if (!['PENDING', 'NEEDS_INFO', 'REJECTED'].includes(p.verificationStatus))
+    throw conflict('Your application is already submitted');
   if (!p.licenseNumber || !p.nationalId) throw unprocessable('Complete your personal information first');
   if (!p.vehicles.length) throw unprocessable('Add your vehicle first');
   const have = new Set(p.documents.map((d) => d.type));
   const missing = REQUIRED_DOCS.filter((t) => !have.has(t));
-  if (missing.length) throw unprocessable(`Missing documents: ${missing.join(', ').toLowerCase().replace(/_/g, ' ')}`, 'MISSING_DOCUMENTS');
-  await prisma.driverProfile.update({ where: { id: p.id }, data: { verificationStatus: 'UNDER_REVIEW', submittedAt: new Date(), verificationNote: null } });
+  if (missing.length)
+    throw unprocessable(
+      `Missing documents: ${missing.join(', ').toLowerCase().replace(/_/g, ' ')}`,
+      'MISSING_DOCUMENTS',
+    );
+  await prisma.driverProfile.update({
+    where: { id: p.id },
+    data: { verificationStatus: 'UNDER_REVIEW', submittedAt: new Date(), verificationNote: null },
+  });
   res.json({ ok: true, status: 'UNDER_REVIEW' });
 });
 
@@ -117,26 +142,39 @@ driverRouter.post('/vehicles', validate(vehicleSchema), async (req, res) => {
   const { categoryCode, ...data } = req.body;
   const category = await prisma.vehicleCategory.findUnique({ where: { code: categoryCode } });
   if (!category) throw badRequest('Unknown vehicle category');
-  if (data.seats < category.capacity) throw badRequest(`${category.name} requires at least ${category.capacity} passenger seats`);
-  if (category.code === 'ELECTRIC' && !data.isElectric) throw badRequest('Only electric vehicles can join the Electric category');
-  const v = await prisma.vehicle.create({ data: { ...data, driverId: p.id, categoryId: category.id }, include: vehicleInclude });
-  if (!p.activeVehicleId) await prisma.driverProfile.update({ where: { id: p.id }, data: { activeVehicleId: v.id } });
+  if (data.seats < category.capacity)
+    throw badRequest(`${category.name} requires at least ${category.capacity} passenger seats`);
+  if (category.code === 'ELECTRIC' && !data.isElectric)
+    throw badRequest('Only electric vehicles can join the Electric category');
+  const v = await prisma.vehicle.create({
+    data: { ...data, driverId: p.id, categoryId: category.id },
+    include: vehicleInclude,
+  });
+  if (!p.activeVehicleId)
+    await prisma.driverProfile.update({ where: { id: p.id }, data: { activeVehicleId: v.id } });
   res.status(201).json(toVehicleDTO(v));
 });
 
 driverRouter.delete('/vehicles/:id', async (req, res) => {
   const p = await profileOf(req.user!.id);
-  if (p.isOnline && p.activeVehicleId === req.params.id) throw conflict('Go offline before removing your active vehicle');
-  const r = await prisma.vehicle.updateMany({ where: { id: String(req.params.id), driverId: p.id, deletedAt: null }, data: { deletedAt: new Date() } });
+  if (p.isOnline && p.activeVehicleId === req.params.id)
+    throw conflict('Go offline before removing your active vehicle');
+  const r = await prisma.vehicle.updateMany({
+    where: { id: String(req.params.id), driverId: p.id, deletedAt: null },
+    data: { deletedAt: new Date() },
+  });
   if (!r.count) throw notFound('Vehicle');
-  if (p.activeVehicleId === req.params.id) await prisma.driverProfile.update({ where: { id: p.id }, data: { activeVehicleId: null } });
+  if (p.activeVehicleId === req.params.id)
+    await prisma.driverProfile.update({ where: { id: p.id }, data: { activeVehicleId: null } });
   res.json({ ok: true });
 });
 
 driverRouter.post('/vehicles/:id/activate', async (req, res) => {
   const p = await profileOf(req.user!.id);
   if (p.isOnline) throw conflict('Go offline before switching vehicles');
-  const v = await prisma.vehicle.findFirst({ where: { id: String(req.params.id), driverId: p.id, deletedAt: null } });
+  const v = await prisma.vehicle.findFirst({
+    where: { id: String(req.params.id), driverId: p.id, deletedAt: null },
+  });
   if (!v) throw notFound('Vehicle');
   await prisma.driverProfile.update({ where: { id: p.id }, data: { activeVehicleId: v.id } });
   res.json({ ok: true });
@@ -151,11 +189,15 @@ driverRouter.post('/documents', upload.single('file'), async (req, res) => {
   const sniffed = sniffMime(req.file.buffer);
   if (!sniffed || sniffed !== req.file.mimetype) throw badRequest('File content does not match its type');
   const vehicleId = typeof req.body.vehicleId === 'string' && req.body.vehicleId ? req.body.vehicleId : null;
-  if (vehicleId && !(await prisma.vehicle.findFirst({ where: { id: vehicleId, driverId: p.id } }))) throw badRequest('Unknown vehicle');
+  if (vehicleId && !(await prisma.vehicle.findFirst({ where: { id: vehicleId, driverId: p.id } })))
+    throw badRequest('Unknown vehicle');
   const key = await saveFile(`drivers/${p.id}`, req.file.buffer, sniffed);
   // Re-uploading a document type replaces the previous (non-approved) version.
   if (type.data !== 'VEHICLE_PHOTO') {
-    await prisma.driverDocument.updateMany({ where: { driverId: p.id, type: type.data, deletedAt: null, status: { not: 'APPROVED' } }, data: { deletedAt: new Date() } });
+    await prisma.driverDocument.updateMany({
+      where: { driverId: p.id, type: type.data, deletedAt: null, status: { not: 'APPROVED' } },
+      data: { deletedAt: new Date() },
+    });
   }
   const doc = await prisma.driverDocument.create({
     data: {
@@ -169,7 +211,10 @@ driverRouter.post('/documents', upload.single('file'), async (req, res) => {
     },
   });
   if (type.data === 'PROFILE_PHOTO') {
-    await prisma.user.update({ where: { id: req.user!.id }, data: { avatarUrl: `/api/files/documents/${doc.id}` } });
+    await prisma.user.update({
+      where: { id: req.user!.id },
+      data: { avatarUrl: `/api/files/documents/${doc.id}` },
+    });
   }
   if (p.verificationStatus === 'NEEDS_INFO') {
     await prisma.driverProfile.update({ where: { id: p.id }, data: { verificationStatus: 'UNDER_REVIEW' } });
@@ -179,7 +224,9 @@ driverRouter.post('/documents', upload.single('file'), async (req, res) => {
 
 driverRouter.delete('/documents/:id', async (req, res) => {
   const p = await profileOf(req.user!.id);
-  const doc = await prisma.driverDocument.findFirst({ where: { id: String(req.params.id), driverId: p.id, deletedAt: null } });
+  const doc = await prisma.driverDocument.findFirst({
+    where: { id: String(req.params.id), driverId: p.id, deletedAt: null },
+  });
   if (!doc) throw notFound('Document');
   if (doc.status === 'APPROVED') throw conflict('Approved documents cannot be removed');
   await prisma.driverDocument.update({ where: { id: doc.id }, data: { deletedAt: new Date() } });
@@ -188,25 +235,48 @@ driverRouter.delete('/documents/:id', async (req, res) => {
 });
 
 // ─── Availability ───
-const statusSchema = z.object({ online: z.boolean(), lat: z.number().optional(), lng: z.number().optional() });
+const statusSchema = z.object({
+  online: z.boolean(),
+  lat: z.number().optional(),
+  lng: z.number().optional(),
+});
 driverRouter.post('/status', validate(statusSchema), async (req, res) => {
   const me = req.user!.id;
-  const p = await prisma.driverProfile.findUniqueOrThrow({ where: { userId: me }, include: { activeVehicle: { include: { category: true } } } });
+  const p = await prisma.driverProfile.findUniqueOrThrow({
+    where: { userId: me },
+    include: { activeVehicle: { include: { category: true } } },
+  });
   if (req.body.online) {
-    if (p.verificationStatus !== 'APPROVED') throw forbidden('Your account must be approved before you can go online');
+    if (p.verificationStatus !== 'APPROVED')
+      throw forbidden('Your account must be approved before you can go online');
     if (!p.activeVehicle || p.activeVehicle.status !== 'APPROVED' || p.activeVehicle.deletedAt)
       throw unprocessable('Select an approved vehicle before going online', 'NO_ACTIVE_VEHICLE');
     const lat = req.body.lat ?? p.lastLat;
     const lng = req.body.lng ?? p.lastLng;
-    if (lat == null || lng == null) throw badRequest('Location is required to go online — enable location access');
-    await prisma.driverProfile.update({ where: { id: p.id }, data: { isOnline: true, lastLat: lat, lastLng: lng, lastLocationAt: new Date() } });
+    if (lat == null || lng == null)
+      throw badRequest('Location is required to go online — enable location access');
+    await prisma.driverProfile.update({
+      where: { id: p.id },
+      data: { isOnline: true, lastLat: lat, lastLng: lng, lastLocationAt: new Date() },
+    });
     await driverLocations.goOnline(me, p.activeVehicle.category.code, lat, lng);
-    const engaged = await prisma.ride.findFirst({ where: { driverId: me, status: { in: ['ACCEPTED', 'DRIVER_ARRIVING', 'ARRIVED', 'IN_PROGRESS'] } } });
+    const engaged = await prisma.ride.findFirst({
+      where: { driverId: me, status: { in: ['ACCEPTED', 'DRIVER_ARRIVING', 'ARRIVED', 'IN_PROGRESS'] } },
+    });
     if (engaged) await driverLocations.setBusy(me, engaged.id);
     getIO()?.in(`user:${me}`).socketsJoin('drivers:online');
-    emitToAdmins('admin:driver_location', { driverId: me, lat, lng, at: new Date().toISOString(), isOnline: true, busy: !!engaged });
+    emitToAdmins('admin:driver_location', {
+      driverId: me,
+      lat,
+      lng,
+      at: new Date().toISOString(),
+      isOnline: true,
+      busy: !!engaged,
+    });
   } else {
-    const engaged = await prisma.ride.findFirst({ where: { driverId: me, status: { in: ['ACCEPTED', 'DRIVER_ARRIVING', 'ARRIVED', 'IN_PROGRESS'] } } });
+    const engaged = await prisma.ride.findFirst({
+      where: { driverId: me, status: { in: ['ACCEPTED', 'DRIVER_ARRIVING', 'ARRIVED', 'IN_PROGRESS'] } },
+    });
     if (engaged) throw conflict('Finish your current trip before going offline');
     await prisma.driverProfile.update({ where: { id: p.id }, data: { isOnline: false } });
     await driverLocations.goOffline(me);
@@ -261,10 +331,14 @@ driverRouter.post('/rides/:id/arrived', async (req, res) => {
   res.json({ ride: toRideDTO(ride, req.user!.id, 'DRIVER') });
 });
 
-driverRouter.post('/rides/:id/start', validate(z.object({ pin: z.string().regex(/^\d{4}$/, 'Enter the 4-digit PIN') })), async (req, res) => {
-  const ride = await startTrip(String(req.params.id), req.user!.id, req.body.pin);
-  res.json({ ride: toRideDTO(ride, req.user!.id, 'DRIVER') });
-});
+driverRouter.post(
+  '/rides/:id/start',
+  validate(z.object({ pin: z.string().regex(/^\d{4}$/, 'Enter the 4-digit PIN') })),
+  async (req, res) => {
+    const ride = await startTrip(String(req.params.id), req.user!.id, req.body.pin);
+    res.json({ ride: toRideDTO(ride, req.user!.id, 'DRIVER') });
+  },
+);
 
 driverRouter.post('/rides/:id/complete', async (req, res) => {
   const ride = await completeTrip(String(req.params.id), { id: req.user!.id, role: 'DRIVER' });
@@ -313,10 +387,23 @@ driverRouter.get('/dashboard', async (req, res) => {
   const me = req.user!.id;
   const p = await prisma.driverProfile.findUniqueOrThrow({ where: { userId: me } });
   const [today, week, wallet, recent] = await Promise.all([
-    prisma.driverEarning.aggregate({ where: { driverId: me, createdAt: { gte: startOfDay() } }, _sum: { netEarning: true, tip: true }, _count: true }),
-    prisma.driverEarning.aggregate({ where: { driverId: me, createdAt: { gte: startOfWeek() } }, _sum: { netEarning: true, tip: true }, _count: true }),
+    prisma.driverEarning.aggregate({
+      where: { driverId: me, createdAt: { gte: startOfDay() } },
+      _sum: { netEarning: true, tip: true },
+      _count: true,
+    }),
+    prisma.driverEarning.aggregate({
+      where: { driverId: me, createdAt: { gte: startOfWeek() } },
+      _sum: { netEarning: true, tip: true },
+      _count: true,
+    }),
     prisma.wallet.findUnique({ where: { userId: me } }),
-    prisma.ride.findMany({ where: { driverId: me, status: { in: FINISHED_TRIP_STATUSES } }, include: rideInclude, orderBy: { completedAt: 'desc' }, take: 5 }),
+    prisma.ride.findMany({
+      where: { driverId: me, status: { in: FINISHED_TRIP_STATUSES } },
+      include: rideInclude,
+      orderBy: { completedAt: 'desc' },
+      take: 5,
+    }),
   ]);
   res.json({
     isOnline: p.isOnline,
@@ -338,8 +425,23 @@ driverRouter.get('/earnings', validate(periodSchema, 'query'), async (req, res) 
   const { days } = q<{ days: number }>(req);
   const me = req.user!.id;
   const since = startOfDay(new Date(Date.now() - (days - 1) * 86_400_000));
-  const rows = await prisma.driverEarning.findMany({ where: { driverId: me, createdAt: { gte: since } }, orderBy: { createdAt: 'asc' } });
-  const byDay = new Map<string, { date: string; net: number; gross: number; commission: number; tips: number; trips: number; cash: number; online: number }>();
+  const rows = await prisma.driverEarning.findMany({
+    where: { driverId: me, createdAt: { gte: since } },
+    orderBy: { createdAt: 'asc' },
+  });
+  const byDay = new Map<
+    string,
+    {
+      date: string;
+      net: number;
+      gross: number;
+      commission: number;
+      tips: number;
+      trips: number;
+      cash: number;
+      online: number;
+    }
+  >();
   for (let i = 0; i < days; i++) {
     const d = new Date(since.getTime() + i * 86_400_000).toISOString().slice(0, 10);
     byDay.set(d, { date: d, net: 0, gross: 0, commission: 0, tips: 0, trips: 0, cash: 0, online: 0 });
@@ -358,44 +460,99 @@ driverRouter.get('/earnings', validate(periodSchema, 'query'), async (req, res) 
   }
   const series = [...byDay.values()];
   const totals = series.reduce(
-    (a, b) => ({ net: a.net + b.net, gross: a.gross + b.gross, commission: a.commission + b.commission, tips: a.tips + b.tips, trips: a.trips + b.trips, cash: a.cash + b.cash, online: a.online + b.online }),
+    (a, b) => ({
+      net: a.net + b.net,
+      gross: a.gross + b.gross,
+      commission: a.commission + b.commission,
+      tips: a.tips + b.tips,
+      trips: a.trips + b.trips,
+      cash: a.cash + b.cash,
+      online: a.online + b.online,
+    }),
     { net: 0, gross: 0, commission: 0, tips: 0, trips: 0, cash: 0, online: 0 },
   );
   res.json({ days, series, totals });
 });
 
-driverRouter.get('/earnings/history', validate(z.object({ page: z.coerce.number().default(1), pageSize: z.coerce.number().max(50).default(20) }), 'query'), async (req, res) => {
-  const { page, pageSize } = q<{ page: number; pageSize: number }>(req);
-  const where = { driverId: req.user!.id };
-  const [items, total] = await Promise.all([
-    prisma.driverEarning.findMany({ where, include: { ride: { select: { code: true, pickupAddress: true, dropoffAddress: true, completedAt: true, currency: true } } }, orderBy: { createdAt: 'desc' }, ...pageArgs(page, pageSize) }),
-    prisma.driverEarning.count({ where }),
-  ]);
-  res.json(paginated(items, total, page, pageSize));
-});
+driverRouter.get(
+  '/earnings/history',
+  validate(
+    z.object({ page: z.coerce.number().default(1), pageSize: z.coerce.number().max(50).default(20) }),
+    'query',
+  ),
+  async (req, res) => {
+    const { page, pageSize } = q<{ page: number; pageSize: number }>(req);
+    const where = { driverId: req.user!.id };
+    const [items, total] = await Promise.all([
+      prisma.driverEarning.findMany({
+        where,
+        include: {
+          ride: {
+            select: {
+              code: true,
+              pickupAddress: true,
+              dropoffAddress: true,
+              completedAt: true,
+              currency: true,
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        ...pageArgs(page, pageSize),
+      }),
+      prisma.driverEarning.count({ where }),
+    ]);
+    res.json(paginated(items, total, page, pageSize));
+  },
+);
 
 driverRouter.get('/wallet', async (req, res) => {
-  const wallet = await prisma.wallet.upsert({ where: { userId: req.user!.id }, create: { userId: req.user!.id }, update: {} });
-  const transactions = await prisma.walletTransaction.findMany({ where: { walletId: wallet.id }, orderBy: { createdAt: 'desc' }, take: 50 });
+  const wallet = await prisma.wallet.upsert({
+    where: { userId: req.user!.id },
+    create: { userId: req.user!.id },
+    update: {},
+  });
+  const transactions = await prisma.walletTransaction.findMany({
+    where: { walletId: wallet.id },
+    orderBy: { createdAt: 'desc' },
+    take: 50,
+  });
   res.json({ balance: wallet.balance, currency: wallet.currency, transactions });
 });
 
 driverRouter.get('/payouts', async (req, res) => {
-  res.json({ items: await prisma.driverPayout.findMany({ where: { driverId: req.user!.id }, orderBy: { createdAt: 'desc' }, take: 50 }) });
+  res.json({
+    items: await prisma.driverPayout.findMany({
+      where: { driverId: req.user!.id },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    }),
+  });
 });
 
 driverRouter.post('/payouts', validate(payoutRequestSchema), async (req, res) => {
   const me = req.user!.id;
   if (req.body.amount < 5000) throw badRequest('Minimum withdrawal is 50.00');
-  const pending = await prisma.driverPayout.count({ where: { driverId: me, status: { in: ['REQUESTED', 'APPROVED'] } } });
+  const pending = await prisma.driverPayout.count({
+    where: { driverId: me, status: { in: ['REQUESTED', 'APPROVED'] } },
+  });
   if (pending) throw conflict('You already have a withdrawal in progress');
   const masked = req.body.destination.replace(/\s/g, '');
   const payout = await prisma.$transaction(async (tx) => {
     // Funds are reserved immediately (debited); a rejected payout is credited back.
     const p = await tx.driverPayout.create({
-      data: { driverId: me, amount: req.body.amount, method: req.body.method, destination: `•••• ${masked.slice(-4)}` },
+      data: {
+        driverId: me,
+        amount: req.body.amount,
+        method: req.body.method,
+        destination: `•••• ${masked.slice(-4)}`,
+      },
     });
-    await postWalletTx(tx, me, -req.body.amount, 'PAYOUT', { referenceType: 'payout', referenceId: p.id, description: 'Withdrawal request' });
+    await postWalletTx(tx, me, -req.body.amount, 'PAYOUT', {
+      referenceType: 'payout',
+      referenceId: p.id,
+      description: 'Withdrawal request',
+    });
     return p;
   });
   emitToAdmins('admin:ride_event', { rideId: '', status: 'PAYOUT_REQUESTED', code: payout.id });
@@ -409,7 +566,14 @@ driverRouter.get('/reports/weekly', async (req, res) => {
   const rows = await prisma.driverEarning.findMany({ where: { driverId: me, createdAt: { gte: from } } });
   const out = Array.from({ length: weeks }, (_, i) => {
     const start = new Date(from.getTime() + i * 7 * 86_400_000);
-    return { weekStart: start.toISOString().slice(0, 10), trips: 0, gross: 0, commission: 0, tips: 0, net: 0 };
+    return {
+      weekStart: start.toISOString().slice(0, 10),
+      trips: 0,
+      gross: 0,
+      commission: 0,
+      tips: 0,
+      net: 0,
+    };
   });
   for (const r of rows) {
     const idx = Math.floor((r.createdAt.getTime() - from.getTime()) / (7 * 86_400_000));
@@ -432,5 +596,15 @@ driverRouter.get('/reviews', async (req, res) => {
     take: 50,
   });
   const dist = [1, 2, 3, 4, 5].map((s) => ({ score: s, count: items.filter((i) => i.score === s).length }));
-  res.json({ items: items.map((i) => ({ id: i.id, score: i.score, comment: i.review?.isHidden ? null : i.review?.comment, tags: i.review?.tags ?? [], ride: i.ride, createdAt: i.createdAt })), distribution: dist });
+  res.json({
+    items: items.map((i) => ({
+      id: i.id,
+      score: i.score,
+      comment: i.review?.isHidden ? null : i.review?.comment,
+      tags: i.review?.tags ?? [],
+      ride: i.ride,
+      createdAt: i.createdAt,
+    })),
+    distribution: dist,
+  });
 });

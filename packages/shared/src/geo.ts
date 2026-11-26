@@ -11,7 +11,8 @@ const toDeg = (r: number) => (r * 180) / Math.PI;
 export function haversine(a: LatLng, b: LatLng): number {
   const dLat = toRad(b.lat - a.lat);
   const dLng = toRad(b.lng - a.lng);
-  const h = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
+  const h =
+    Math.sin(dLat / 2) ** 2 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
   return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
 }
 
@@ -31,7 +32,10 @@ export function pathLength(points: LatLng[]): number {
 }
 
 /** Point at `distance` meters along a polyline (clamped to the ends). */
-export function pointAlong(points: LatLng[], distance: number): { point: LatLng; heading: number; done: boolean } {
+export function pointAlong(
+  points: LatLng[],
+  distance: number,
+): { point: LatLng; heading: number; done: boolean } {
   if (points.length === 0) throw new Error('empty path');
   if (points.length === 1) return { point: points[0], heading: 0, done: true };
   let remaining = Math.max(0, distance);
@@ -58,7 +62,10 @@ export function pointAlong(points: LatLng[], distance: number): { point: LatLng;
 export function pointInPolygon(p: LatLng, polygon: LatLng[]): boolean {
   let inside = false;
   for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-    const xi = polygon[i].lng, yi = polygon[i].lat, xj = polygon[j].lng, yj = polygon[j].lat;
+    const xi = polygon[i].lng,
+      yi = polygon[i].lat,
+      xj = polygon[j].lng,
+      yj = polygon[j].lat;
     const intersect = yi > p.lat !== yj > p.lat && p.lng < ((xj - xi) * (p.lat - yi)) / (yj - yi) + xi;
     if (intersect) inside = !inside;
   }

@@ -71,13 +71,16 @@ export const useLocation = create<LocState>((set, get) => ({
     if (!target || !from) return set({ path: null, progress: 0 });
     if (haversine(from, target) < 30) return set({ path: null, progress: 0 });
     try {
-      const r = await api.get<{ geometry: [number, number][] }>(`/geo/route?fromLat=${from.lat}&fromLng=${from.lng}&toLat=${target.lat}&toLng=${target.lng}`);
+      const r = await api.get<{ geometry: [number, number][] }>(
+        `/geo/route?fromLat=${from.lat}&fromLng=${from.lng}&toLat=${target.lat}&toLng=${target.lng}`,
+      );
       set({ path: r.geometry.map(([lat, lng]) => ({ lat, lng })), progress: 0 });
     } catch {
       set({ path: [from, target], progress: 0 });
     }
   },
-  followRoute: (route) => set({ path: route ? route.map(([lat, lng]) => ({ lat, lng })) : null, progress: 0 }),
+  followRoute: (route) =>
+    set({ path: route ? route.map(([lat, lng]) => ({ lat, lng })) : null, progress: 0 }),
 }));
 
 function tick() {
@@ -107,7 +110,13 @@ export function startEngine() {
     watchId = navigator.geolocation.watchPosition(
       (p) => {
         useLocation.setState({ source: 'gps', gpsError: null });
-        useLocation.getState().setPos({ lat: p.coords.latitude, lng: p.coords.longitude, heading: p.coords.heading ?? undefined });
+        useLocation
+          .getState()
+          .setPos({
+            lat: p.coords.latitude,
+            lng: p.coords.longitude,
+            heading: p.coords.heading ?? undefined,
+          });
       },
       (err) => useLocation.setState({ gpsError: err.message, source: 'none' }),
       { enableHighAccuracy: true, maximumAge: 2000, timeout: 15000 },

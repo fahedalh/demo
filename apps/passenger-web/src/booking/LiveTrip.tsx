@@ -4,7 +4,21 @@ import { useTranslation } from 'react-i18next';
 import { MessageCircle, Phone, Share2, ShieldAlert, Star, Send } from 'lucide-react';
 import { haversine, type DriverLocationPayload, type MessageDTO, type RideDTO } from '@masar/shared';
 import {
-  api, ApiError, Avatar, Button, ConfirmDialog, Dialog, DialogContent, fileUrl, Input, Textarea, toast, useAuth, useFormat, useSocketEvent, cn,
+  api,
+  ApiError,
+  Avatar,
+  Button,
+  ConfirmDialog,
+  Dialog,
+  DialogContent,
+  fileUrl,
+  Input,
+  Textarea,
+  toast,
+  useAuth,
+  useFormat,
+  useSocketEvent,
+  cn,
 } from '@masar/ui';
 
 const CONFIG_KEY = ['config'];
@@ -21,27 +35,43 @@ export function LiveTrip({ ride, driverLoc }: { ride: RideDTO; driverLoc: Driver
   const ar = i18n.language === 'ar';
   const d = ride.driver!;
   const v = d.vehicle;
-  const { data: config } = useQuery({ queryKey: CONFIG_KEY, queryFn: () => api.get<{ freeCancellationSeconds: number }>('/catalog/config'), staleTime: Infinity });
+  const { data: config } = useQuery({
+    queryKey: CONFIG_KEY,
+    queryFn: () => api.get<{ freeCancellationSeconds: number }>('/catalog/config'),
+    staleTime: Infinity,
+  });
 
   // ETA: remaining straight-line distance at city speed (refreshes with each location ping).
   const pos = driverLoc ?? d.location;
   const target = ride.status === 'IN_PROGRESS' ? ride.dropoff : ride.pickup;
   const etaMin = pos ? Math.max(1, Math.round(((haversine(pos, target) * 1.3) / 1000 / 30) * 60)) : null;
 
-  const onMessage = useCallback((m: MessageDTO) => {
-    if (m.rideId === ride.id && m.senderId !== useAuth.getState().user?.id && !chatOpen) setUnread((u) => u + 1);
-  }, [ride.id, chatOpen]);
+  const onMessage = useCallback(
+    (m: MessageDTO) => {
+      if (m.rideId === ride.id && m.senderId !== useAuth.getState().user?.id && !chatOpen)
+        setUnread((u) => u + 1);
+    },
+    [ride.id, chatOpen],
+  );
   useSocketEvent('ride:message', onMessage);
 
-  const freeWindowOver = ride.acceptedAt && config ? Date.now() - new Date(ride.acceptedAt).getTime() > config.freeCancellationSeconds * 1000 : false;
+  const freeWindowOver =
+    ride.acceptedAt && config
+      ? Date.now() - new Date(ride.acceptedAt).getTime() > config.freeCancellationSeconds * 1000
+      : false;
   const feeApplies = ride.status === 'ARRIVED' || freeWindowOver;
 
   const cancel = useMutation({
-    mutationFn: () => api.post<{ ride: RideDTO }>(`/rides/${ride.id}/cancel`, { reason: reason || undefined }),
+    mutationFn: () =>
+      api.post<{ ride: RideDTO }>(`/rides/${ride.id}/cancel`, { reason: reason || undefined }),
     onSuccess: ({ ride: r }) => {
       setCancelOpen(false);
       qc.setQueryData(['ride', 'active'], null);
-      toast.success(r.cancellationFee ? `${t('ride.status.CANCELLED')} · ${f.money(r.cancellationFee, r.currency)}` : t('ride.status.CANCELLED'));
+      toast.success(
+        r.cancellationFee
+          ? `${t('ride.status.CANCELLED')} · ${f.money(r.cancellationFee, r.currency)}`
+          : t('ride.status.CANCELLED'),
+      );
     },
     onError: (e) => toast.error(e instanceof ApiError ? e.message : t('errors.generic')),
   });
@@ -69,13 +99,21 @@ export function LiveTrip({ ride, driverLoc }: { ride: RideDTO; driverLoc: Driver
   };
 
   const headline =
-    ride.status === 'ARRIVED' ? t('trip.arrived') : ride.status === 'IN_PROGRESS' ? t('trip.onTrip') : t('trip.arriving');
+    ride.status === 'ARRIVED'
+      ? t('trip.arrived')
+      : ride.status === 'IN_PROGRESS'
+        ? t('trip.onTrip')
+        : t('trip.arriving');
   const sub =
     ride.status === 'ARRIVED'
       ? t('trip.arrivedHelp')
       : ride.status === 'IN_PROGRESS'
-        ? etaMin != null ? t('trip.eta', { time: f.time(new Date(Date.now() + etaMin * 60_000)) }) : ''
-        : etaMin != null ? t('trip.arrivingIn', { min: etaMin }) : '';
+        ? etaMin != null
+          ? t('trip.eta', { time: f.time(new Date(Date.now() + etaMin * 60_000)) })
+          : ''
+        : etaMin != null
+          ? t('trip.arrivingIn', { min: etaMin })
+          : '';
 
   return (
     <div>
@@ -86,9 +124,24 @@ export function LiveTrip({ ride, driverLoc }: { ride: RideDTO; driverLoc: Driver
             <p className={cn('text-sm', ride.status === 'ARRIVED' ? 'text-white/85' : 'text-muted')}>{sub}</p>
           </div>
           {ride.status !== 'IN_PROGRESS' && ride.startPin && (
-            <div className={cn('rounded-2xl px-3 py-2 text-center', ride.status === 'ARRIVED' ? 'bg-white/15' : 'bg-surface-2')} title={t('trip.pinHelp')}>
-              <p className={cn('text-[10px] font-semibold uppercase tracking-wider', ride.status === 'ARRIVED' ? 'text-white/80' : 'text-muted')}>{t('trip.pin')}</p>
-              <p className="tabular text-xl font-bold tracking-[0.2em]" dir="ltr">{ride.startPin}</p>
+            <div
+              className={cn(
+                'rounded-2xl px-3 py-2 text-center',
+                ride.status === 'ARRIVED' ? 'bg-white/15' : 'bg-surface-2',
+              )}
+              title={t('trip.pinHelp')}
+            >
+              <p
+                className={cn(
+                  'text-[10px] font-semibold uppercase tracking-wider',
+                  ride.status === 'ARRIVED' ? 'text-white/80' : 'text-muted',
+                )}
+              >
+                {t('trip.pin')}
+              </p>
+              <p className="tabular text-xl font-bold tracking-[0.2em]" dir="ltr">
+                {ride.startPin}
+              </p>
             </div>
           )}
         </div>
@@ -99,49 +152,93 @@ export function LiveTrip({ ride, driverLoc }: { ride: RideDTO; driverLoc: Driver
           <div className="relative">
             <Avatar name={`${d.firstName} ${d.lastName}`} src={fileUrl(d.avatarUrl)} size={60} />
             <span className="absolute -bottom-1 start-1/2 inline-flex -translate-x-1/2 items-center gap-0.5 rounded-full bg-surface px-1.5 py-0.5 text-xs font-bold shadow-soft ring-1 ring-line rtl:translate-x-1/2">
-              <Star className="size-3 fill-amber-400 text-amber-400" />{d.rating.toFixed(1)}
+              <Star className="size-3 fill-amber-400 text-amber-400" />
+              {d.rating.toFixed(1)}
             </span>
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-lg font-bold">{d.firstName} {d.lastName}</p>
+            <p className="text-lg font-bold">
+              {d.firstName} {d.lastName}
+            </p>
             <p className="text-sm text-muted">{t('trip.trips', { count: d.completedRides })}</p>
           </div>
           {v && (
             <div className="text-end">
-              <p className="rounded-lg bg-surface-2 px-2.5 py-1 font-mono text-sm font-bold tracking-wide" dir="ltr">{v.plateNumber}</p>
-              <p className="mt-1 text-xs text-muted">{t('trip.vehicle', { color: v.color, make: v.make, model: v.model })}</p>
+              <p
+                className="rounded-lg bg-surface-2 px-2.5 py-1 font-mono text-sm font-bold tracking-wide"
+                dir="ltr"
+              >
+                {v.plateNumber}
+              </p>
+              <p className="mt-1 text-xs text-muted">
+                {t('trip.vehicle', { color: v.color, make: v.make, model: v.model })}
+              </p>
             </div>
           )}
         </div>
 
         <div className="grid grid-cols-3 gap-2">
-          <button onClick={() => { setChatOpen(true); setUnread(0); }} className="relative flex flex-col items-center gap-1.5 rounded-2xl bg-surface-2 py-3 text-xs font-semibold transition hover:bg-line">
-            <MessageCircle className="size-5" />{t('actions.message')}
-            {unread > 0 && <span className="absolute end-3 top-2 grid size-5 place-items-center rounded-full bg-accent text-[10px] text-white">{unread}</span>}
+          <button
+            onClick={() => {
+              setChatOpen(true);
+              setUnread(0);
+            }}
+            className="relative flex flex-col items-center gap-1.5 rounded-2xl bg-surface-2 py-3 text-xs font-semibold transition hover:bg-line"
+          >
+            <MessageCircle className="size-5" />
+            {t('actions.message')}
+            {unread > 0 && (
+              <span className="absolute end-3 top-2 grid size-5 place-items-center rounded-full bg-accent text-[10px] text-white">
+                {unread}
+              </span>
+            )}
           </button>
-          <a href={d.phone ? `tel:${d.phone}` : undefined} className="flex flex-col items-center gap-1.5 rounded-2xl bg-surface-2 py-3 text-xs font-semibold transition hover:bg-line" aria-disabled={!d.phone}>
-            <Phone className="size-5" />{t('actions.call')}
+          <a
+            href={d.phone ? `tel:${d.phone}` : undefined}
+            className="flex flex-col items-center gap-1.5 rounded-2xl bg-surface-2 py-3 text-xs font-semibold transition hover:bg-line"
+            aria-disabled={!d.phone}
+          >
+            <Phone className="size-5" />
+            {t('actions.call')}
           </a>
-          <button onClick={share} className="flex flex-col items-center gap-1.5 rounded-2xl bg-surface-2 py-3 text-xs font-semibold transition hover:bg-line">
-            <Share2 className="size-5" />{t('trip.share')}
+          <button
+            onClick={share}
+            className="flex flex-col items-center gap-1.5 rounded-2xl bg-surface-2 py-3 text-xs font-semibold transition hover:bg-line"
+          >
+            <Share2 className="size-5" />
+            {t('trip.share')}
           </button>
         </div>
 
         <div className="space-y-2 rounded-2xl border border-line p-4 text-sm">
-          <div className="flex items-center gap-3"><span className="size-2 rounded-full bg-fg" /><span className="truncate">{ride.pickup.address}</span></div>
-          <div className="flex items-center gap-3"><span className="size-2 bg-fg" /><span className="truncate">{ride.dropoff.address}</span></div>
+          <div className="flex items-center gap-3">
+            <span className="size-2 rounded-full bg-fg" />
+            <span className="truncate">{ride.pickup.address}</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="size-2 bg-fg" />
+            <span className="truncate">{ride.dropoff.address}</span>
+          </div>
           <div className="flex items-center justify-between border-t border-line pt-2">
-            <span className="text-muted">{ar ? ride.category.nameAr : ride.category.name} · {t(`ride.payment.${ride.paymentType}`)}</span>
+            <span className="text-muted">
+              {ar ? ride.category.nameAr : ride.category.name} · {t(`ride.payment.${ride.paymentType}`)}
+            </span>
             <span className="tabular font-bold">{f.money(ride.estimatedFare, ride.currency)}</span>
           </div>
         </div>
 
         <div className="flex gap-2">
-          <Button variant="outline" className="flex-1 border-danger/30 text-danger hover:bg-danger/5" onClick={() => setSosOpen(true)}>
+          <Button
+            variant="outline"
+            className="flex-1 border-danger/30 text-danger hover:bg-danger/5"
+            onClick={() => setSosOpen(true)}
+          >
             <ShieldAlert /> {t('trip.sos')}
           </Button>
           {ride.status !== 'IN_PROGRESS' && (
-            <Button variant="secondary" className="flex-1" onClick={() => setCancelOpen(true)}>{t('trip.cancelRide')}</Button>
+            <Button variant="secondary" className="flex-1" onClick={() => setCancelOpen(true)}>
+              {t('trip.cancelRide')}
+            </Button>
           )}
         </div>
       </div>
@@ -159,14 +256,25 @@ export function LiveTrip({ ride, driverLoc }: { ride: RideDTO; driverLoc: Driver
         loading={cancel.isPending}
         onConfirm={() => cancel.mutate()}
       >
-        <Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder={t('trip.reason')} maxLength={200} />
+        <Input
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          placeholder={t('trip.reason')}
+          maxLength={200}
+        />
       </ConfirmDialog>
 
       <Dialog open={sosOpen} onOpenChange={setSosOpen}>
         <DialogContent title={t('trip.sosTitle')} description={t('trip.sosHelp')}>
           <div className="grid gap-2">
-            <Button variant="danger" size="lg" loading={sos.isPending} onClick={() => sos.mutate()}><ShieldAlert /> {t('trip.sosConfirm')}</Button>
-            <Button asChild variant="outline" size="lg"><a href="tel:999"><Phone /> {t('trip.call999')}</a></Button>
+            <Button variant="danger" size="lg" loading={sos.isPending} onClick={() => sos.mutate()}>
+              <ShieldAlert /> {t('trip.sosConfirm')}
+            </Button>
+            <Button asChild variant="outline" size="lg">
+              <a href="tel:999">
+                <Phone /> {t('trip.call999')}
+              </a>
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -174,7 +282,15 @@ export function LiveTrip({ ride, driverLoc }: { ride: RideDTO; driverLoc: Driver
   );
 }
 
-export function ChatDialog({ open, onOpenChange, ride }: { open: boolean; onOpenChange: (o: boolean) => void; ride: RideDTO }) {
+export function ChatDialog({
+  open,
+  onOpenChange,
+  ride,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  ride: RideDTO;
+}) {
   const { t } = useTranslation();
   const f = useFormat();
   const me = useAuth((s) => s.user)!;
@@ -182,11 +298,17 @@ export function ChatDialog({ open, onOpenChange, ride }: { open: boolean; onOpen
   const [text, setText] = useState('');
   const bottom = useRef<HTMLDivElement>(null);
   const key = ['messages', ride.id];
-  const { data } = useQuery({ queryKey: key, queryFn: () => api.get<{ items: MessageDTO[] }>(`/rides/${ride.id}/messages`).then((r) => r.items), enabled: open });
+  const { data } = useQuery({
+    queryKey: key,
+    queryFn: () => api.get<{ items: MessageDTO[] }>(`/rides/${ride.id}/messages`).then((r) => r.items),
+    enabled: open,
+  });
   const onMessage = useCallback(
     (m: MessageDTO) => {
       if (m.rideId !== ride.id) return;
-      qc.setQueryData<MessageDTO[]>(key, (prev) => (prev?.some((x) => x.id === m.id) ? prev : [...(prev ?? []), m]));
+      qc.setQueryData<MessageDTO[]>(key, (prev) =>
+        prev?.some((x) => x.id === m.id) ? prev : [...(prev ?? []), m],
+      );
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [ride.id, qc],
@@ -205,14 +327,27 @@ export function ChatDialog({ open, onOpenChange, ride }: { open: boolean; onOpen
   const other = me.id === ride.passenger?.id ? ride.driver : ride.passenger;
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent title={other ? `${other.firstName}` : t('trip.chat')} className="flex flex-col sm:h-[560px]">
+      <DialogContent
+        title={other ? `${other.firstName}` : t('trip.chat')}
+        className="flex flex-col sm:h-[560px]"
+      >
         <div className="-mx-2 flex max-h-[50dvh] min-h-48 flex-1 flex-col gap-2 overflow-y-auto px-2 py-2">
           {data?.map((m) => {
             const mine = m.senderId === me.id;
             return (
-              <div key={m.id} className={cn('max-w-[80%] rounded-2xl px-3.5 py-2 text-[15px]', mine ? 'self-end rounded-ee-md bg-primary text-primary-fg' : 'self-start rounded-es-md bg-surface-2')}>
+              <div
+                key={m.id}
+                className={cn(
+                  'max-w-[80%] rounded-2xl px-3.5 py-2 text-[15px]',
+                  mine
+                    ? 'self-end rounded-ee-md bg-primary text-primary-fg'
+                    : 'self-start rounded-es-md bg-surface-2',
+                )}
+              >
                 {m.body}
-                <span className={cn('mt-0.5 block text-[10px]', mine ? 'text-primary-fg/60' : 'text-muted')}>{f.time(m.createdAt)}</span>
+                <span className={cn('mt-0.5 block text-[10px]', mine ? 'text-primary-fg/60' : 'text-muted')}>
+                  {f.time(m.createdAt)}
+                </span>
               </div>
             );
           })}
@@ -220,12 +355,43 @@ export function ChatDialog({ open, onOpenChange, ride }: { open: boolean; onOpen
         </div>
         <div className="mt-2 flex gap-2 overflow-x-auto scrollbar-none">
           {quick.map((q) => (
-            <button key={q} onClick={() => send.mutate(q)} className="shrink-0 rounded-full bg-surface-2 px-3 py-1.5 text-xs font-medium hover:bg-line">{q}</button>
+            <button
+              key={q}
+              onClick={() => send.mutate(q)}
+              className="shrink-0 rounded-full bg-surface-2 px-3 py-1.5 text-xs font-medium hover:bg-line"
+            >
+              {q}
+            </button>
           ))}
         </div>
-        <form className="mt-3 flex gap-2" onSubmit={(e) => { e.preventDefault(); if (text.trim()) send.mutate(text.trim()); }}>
-          <Textarea rows={1} value={text} onChange={(e) => setText(e.target.value)} placeholder={t('trip.typeMessage')} className="min-h-12 resize-none py-3" onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (text.trim()) send.mutate(text.trim()); } }} />
-          <Button type="submit" size="icon" className="size-12 shrink-0 rounded-xl" disabled={!text.trim()} loading={send.isPending} aria-label={t('actions.send')}>
+        <form
+          className="mt-3 flex gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (text.trim()) send.mutate(text.trim());
+          }}
+        >
+          <Textarea
+            rows={1}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder={t('trip.typeMessage')}
+            className="min-h-12 resize-none py-3"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (text.trim()) send.mutate(text.trim());
+              }
+            }}
+          />
+          <Button
+            type="submit"
+            size="icon"
+            className="size-12 shrink-0 rounded-xl"
+            disabled={!text.trim()}
+            loading={send.isPending}
+            aria-label={t('actions.send')}
+          >
             {!send.isPending && <Send className="rtl:-scale-x-100" />}
           </Button>
         </form>

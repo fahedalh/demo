@@ -13,7 +13,10 @@ const TripsPage = lazy(() => import('./pages/Trips').then((m) => ({ default: m.T
 const AccountPage = lazy(() => import('./pages/Account').then((m) => ({ default: m.AccountPage })));
 
 export function useDriverProfile() {
-  return useQuery({ queryKey: ['driver', 'profile'], queryFn: () => api.get<DriverProfileResp>('/driver/profile') });
+  return useQuery({
+    queryKey: ['driver', 'profile'],
+    queryFn: () => api.get<DriverProfileResp>('/driver/profile'),
+  });
 }
 
 function Approved() {

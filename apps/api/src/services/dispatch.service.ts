@@ -50,7 +50,14 @@ function clearTimer(key: string) {
 async function endSearch(rideId: string, offeredBefore: boolean) {
   const to = offeredBefore ? 'EXPIRED' : 'NO_DRIVER_AVAILABLE';
   try {
-    await transition(rideId, 'SEARCHING', to, SYSTEM, {}, offeredBefore ? 'no driver accepted' : 'no eligible driver nearby');
+    await transition(
+      rideId,
+      'SEARCHING',
+      to,
+      SYSTEM,
+      {},
+      offeredBefore ? 'no driver accepted' : 'no eligible driver nearby',
+    );
   } catch {
     return; // ride moved on (accepted / cancelled) in the meantime
   }
@@ -72,7 +79,10 @@ export const dispatch = {
     const release = await acquireLock(`dispatch:${rideId}`, 5_000);
     if (!release) return; // another worker is dispatching this ride right now
     try {
-      const ride = await prisma.ride.findUnique({ where: { id: rideId }, include: { category: true, offers: true } });
+      const ride = await prisma.ride.findUnique({
+        where: { id: rideId },
+        include: { category: true, offers: true },
+      });
       if (!ride || ride.status !== 'SEARCHING') return;
       if (ride.offers.some((o) => o.status === 'PENDING')) return;
 
@@ -82,8 +92,16 @@ export const dispatch = {
       if (ride.dispatchAttempts >= settings.maxDispatchAttempts) return endSearch(rideId, offeredBefore);
 
       const alreadyOffered = new Set(ride.offers.map((o) => o.driverId));
-      const nearby = await driverLocations.findNearby(ride.pickupLat, ride.pickupLng, settings.dispatchRadiusKm, ride.category.code, 25);
-      const candidates = nearby.filter((d) => !alreadyOffered.has(d.driverId) && d.driverId !== ride.passengerId);
+      const nearby = await driverLocations.findNearby(
+        ride.pickupLat,
+        ride.pickupLng,
+        settings.dispatchRadiusKm,
+        ride.category.code,
+        25,
+      );
+      const candidates = nearby.filter(
+        (d) => !alreadyOffered.has(d.driverId) && d.driverId !== ride.passengerId,
+      );
 
       // Defensive: only approved, active drivers with an approved vehicle are eligible.
       const eligible = candidates.length
@@ -109,7 +127,12 @@ export const dispatch = {
 
       const timeoutMs = scale(settings.offerTimeoutSeconds * 1000);
       const offer = await prisma.rideOffer.create({
-        data: { rideId, driverId: next.driverId, distanceM: next.distanceM, expiresAt: new Date(Date.now() + timeoutMs) },
+        data: {
+          rideId,
+          driverId: next.driverId,
+          distanceM: next.distanceM,
+          expiresAt: new Date(Date.now() + timeoutMs),
+        },
       });
       if (!(await driverLocations.reserveForOffer(next.driverId, offer.id, timeoutMs + 2000))) {
         await prisma.rideOffer.update({ where: { id: offer.id }, data: { status: 'CANCELLED' } });
@@ -118,7 +141,10 @@ export const dispatch = {
       }
       await prisma.$transaction([
         prisma.ride.update({ where: { id: rideId }, data: { dispatchAttempts: { increment: 1 } } }),
-        prisma.driverProfile.update({ where: { userId: next.driverId }, data: { offersReceived: { increment: 1 } } }),
+        prisma.driverProfile.update({
+          where: { userId: next.driverId },
+          data: { offersReceived: { increment: 1 } },
+        }),
       ]);
 
       const full = await loadRide(rideId);
@@ -142,12 +168,19 @@ export const dispatch = {
   },
 
   async expireOffer(offerId: string) {
-    const res = await prisma.rideOffer.updateMany({ where: { id: offerId, status: 'PENDING' }, data: { status: 'EXPIRED', respondedAt: new Date() } });
+    const res = await prisma.rideOffer.updateMany({
+      where: { id: offerId, status: 'PENDING' },
+      data: { status: 'EXPIRED', respondedAt: new Date() },
+    });
     const offer = await prisma.rideOffer.findUnique({ where: { id: offerId } });
     if (!offer) return;
     await driverLocations.releaseOffer(offer.driverId);
     if (res.count === 1) {
-      emitToUser(offer.driverId, 'ride:offer:cancelled', { offerId, rideId: offer.rideId, reason: 'timeout' });
+      emitToUser(offer.driverId, 'ride:offer:cancelled', {
+        offerId,
+        rideId: offer.rideId,
+        reason: 'timeout',
+      });
       await this.offerNext(offer.rideId);
     }
   },
@@ -156,7 +189,10 @@ export const dispatch = {
     const offer = await prisma.rideOffer.findUnique({ where: { id: offerId } });
     if (!offer) throw notFound('Offer');
     if (offer.driverId !== driverId) throw forbidden();
-    const res = await prisma.rideOffer.updateMany({ where: { id: offerId, status: 'PENDING' }, data: { status: 'REJECTED', respondedAt: new Date() } });
+    const res = await prisma.rideOffer.updateMany({
+      where: { id: offerId, status: 'PENDING' },
+      data: { status: 'REJECTED', respondedAt: new Date() },
+    });
     clearTimer(`offer:${offerId}`);
     await driverLocations.releaseOffer(driverId);
     if (res.count === 1) void this.offerNext(offer.rideId);
@@ -173,10 +209,24 @@ export const dispatch = {
     if (!driver?.activeVehicleId) throw conflict('Select an approved vehicle before accepting rides');
 
     await prisma.$transaction(async (tx) => {
-      const o = await tx.rideOffer.updateMany({ where: { id: offerId, status: 'PENDING' }, data: { status: 'ACCEPTED', respondedAt: new Date() } });
+      const o = await tx.rideOffer.updateMany({
+        where: { id: offerId, status: 'PENDING' },
+        data: { status: 'ACCEPTED', respondedAt: new Date() },
+      });
       if (o.count !== 1) throw conflict('This request is no longer available', 'OFFER_EXPIRED');
-      await transition(offer.rideId, 'SEARCHING', 'ACCEPTED', { id: driverId, role: 'DRIVER' }, { driverId, vehicleId: driver.activeVehicleId, acceptedAt: new Date() }, undefined, tx);
-      await tx.driverProfile.update({ where: { userId: driverId }, data: { offersAccepted: { increment: 1 } } });
+      await transition(
+        offer.rideId,
+        'SEARCHING',
+        'ACCEPTED',
+        { id: driverId, role: 'DRIVER' },
+        { driverId, vehicleId: driver.activeVehicleId, acceptedAt: new Date() },
+        undefined,
+        tx,
+      );
+      await tx.driverProfile.update({
+        where: { userId: driverId },
+        data: { offersAccepted: { increment: 1 } },
+      });
     });
     clearTimer(`offer:${offerId}`);
     clearTimer(`retry:${offer.rideId}`);
@@ -198,7 +248,10 @@ export const dispatch = {
     clearTimer(`retry:${rideId}`);
     for (const o of pending) {
       clearTimer(`offer:${o.id}`);
-      await prisma.rideOffer.updateMany({ where: { id: o.id, status: 'PENDING' }, data: { status: 'CANCELLED', respondedAt: new Date() } });
+      await prisma.rideOffer.updateMany({
+        where: { id: o.id, status: 'PENDING' },
+        data: { status: 'CANCELLED', respondedAt: new Date() },
+      });
       await driverLocations.releaseOffer(o.driverId);
       emitToUser(o.driverId, 'ride:offer:cancelled', { offerId: o.id, rideId, reason });
     }
@@ -206,7 +259,10 @@ export const dispatch = {
 
   /** Re-arms dispatch after a restart: stale offers are expired and searches resumed. */
   async recover() {
-    await prisma.rideOffer.updateMany({ where: { status: 'PENDING' }, data: { status: 'EXPIRED', respondedAt: new Date() } });
+    await prisma.rideOffer.updateMany({
+      where: { status: 'PENDING' },
+      data: { status: 'EXPIRED', respondedAt: new Date() },
+    });
     const searching = await prisma.ride.findMany({ where: { status: 'SEARCHING' }, select: { id: true } });
     for (const r of searching) void this.offerNext(r.id);
     if (searching.length) logger.info({ count: searching.length }, 'resumed dispatch for searching rides');
@@ -220,7 +276,9 @@ export const dispatch = {
     });
     for (const r of due) {
       if (r.scheduledAt && r.scheduledAt.getTime() < Date.now() - 30 * 60_000) {
-        await transition(r.id, 'REQUESTED', 'EXPIRED', SYSTEM, {}, 'scheduled time passed').catch(() => undefined);
+        await transition(r.id, 'REQUESTED', 'EXPIRED', SYSTEM, {}, 'scheduled time passed').catch(
+          () => undefined,
+        );
         await broadcastRide(r.id).catch(() => undefined);
         continue;
       }

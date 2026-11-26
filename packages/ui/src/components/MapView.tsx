@@ -39,7 +39,8 @@ interface Props {
 const ENV_TILES = import.meta.env.VITE_MAP_TILE_URL as string | undefined;
 const LIGHT = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
 const DARK = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
-const ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>';
+const ATTRIBUTION =
+  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>';
 
 const carSvg = (busy: boolean) => `
 <svg width="34" height="34" viewBox="0 0 34 34" xmlns="http://www.w3.org/2000/svg">
@@ -117,7 +118,13 @@ export function MapView({
   // Create once.
   useEffect(() => {
     if (!el.current || map.current) return;
-    const m = L.map(el.current, { center, zoom, zoomControl: false, attributionControl: true, worldCopyJump: true });
+    const m = L.map(el.current, {
+      center,
+      zoom,
+      zoomControl: false,
+      attributionControl: true,
+      worldCopyJump: true,
+    });
     if (zoomControl) L.control.zoom({ position: 'bottomright' }).addTo(m);
     m.on('moveend', () => {
       const c = m.getCenter();
@@ -127,11 +134,12 @@ export function MapView({
     map.current = m;
     const ro = new ResizeObserver(() => m.invalidateSize());
     ro.observe(el.current);
+    const markerLayer = layer.current;
     return () => {
       ro.disconnect();
       m.remove();
       map.current = null;
-      layer.current.clear();
+      markerLayer.clear();
       tiles.current = null;
       routeLine.current = routeCasing.current = approachLine.current = null;
     };
@@ -145,7 +153,12 @@ export function MapView({
     const dark = document.documentElement.classList.contains('dark');
     const url = ENV_TILES || (dark ? DARK : LIGHT);
     tiles.current?.remove();
-    tiles.current = L.tileLayer(url, { attribution: ATTRIBUTION, maxZoom: 19, subdomains: 'abcd', detectRetina: true }).addTo(m);
+    tiles.current = L.tileLayer(url, {
+      attribution: ATTRIBUTION,
+      maxZoom: 19,
+      subdomains: 'abcd',
+      detectRetina: true,
+    }).addTo(m);
   }, [theme]);
 
   // Markers (diffed by id).
@@ -162,7 +175,11 @@ export function MapView({
         if (inner && mk.heading != null) inner.style.transform = `rotate(${mk.heading}deg)`;
         if ((existing as any)._kind !== mk.kind) existing.setIcon(iconFor(mk));
       } else {
-        const marker = L.marker([mk.lat, mk.lng], { icon: iconFor(mk), keyboard: false, zIndexOffset: mk.kind.startsWith('car') ? 500 : 1000 });
+        const marker = L.marker([mk.lat, mk.lng], {
+          icon: iconFor(mk),
+          keyboard: false,
+          zIndexOffset: mk.kind.startsWith('car') ? 500 : 1000,
+        });
         (marker as any)._kind = mk.kind;
         if (mk.label) marker.bindTooltip(mk.label, { direction: 'top', offset: [0, -14] });
         if (mk.onClick) marker.on('click', mk.onClick);
@@ -192,8 +209,19 @@ export function MapView({
     routeLine.current = routeCasing.current = null;
     if (route && route.length > 1) {
       const dark = document.documentElement.classList.contains('dark');
-      routeCasing.current = L.polyline(route, { color: dark ? '#000' : '#fff', weight: 9, opacity: 0.9, lineCap: 'round', lineJoin: 'round' }).addTo(m);
-      routeLine.current = L.polyline(route, { color: dark ? '#f2f2f2' : '#111111', weight: 5, lineCap: 'round', lineJoin: 'round' }).addTo(m);
+      routeCasing.current = L.polyline(route, {
+        color: dark ? '#000' : '#fff',
+        weight: 9,
+        opacity: 0.9,
+        lineCap: 'round',
+        lineJoin: 'round',
+      }).addTo(m);
+      routeLine.current = L.polyline(route, {
+        color: dark ? '#f2f2f2' : '#111111',
+        weight: 5,
+        lineCap: 'round',
+        lineJoin: 'round',
+      }).addTo(m);
     }
   }, [route, theme]);
 
@@ -203,7 +231,12 @@ export function MapView({
     approachLine.current?.remove();
     approachLine.current = null;
     if (approach && approach.length > 1) {
-      approachLine.current = L.polyline(approach, { color: '#06C167', weight: 5, dashArray: '2 10', lineCap: 'round' }).addTo(m);
+      approachLine.current = L.polyline(approach, {
+        color: '#06C167',
+        weight: 5,
+        dashArray: '2 10',
+        lineCap: 'round',
+      }).addTo(m);
     }
   }, [approach]);
 
@@ -214,7 +247,13 @@ export function MapView({
     if (!m || !fitTo || fitTo.length === 0) return;
     const [t, r, b, l] = fitPadding;
     if (fitTo.length === 1) m.setView(fitTo[0], Math.max(m.getZoom(), 15), { animate: true });
-    else m.fitBounds(L.latLngBounds(fitTo), { paddingTopLeft: [l, t], paddingBottomRight: [r, b], maxZoom: 16, animate: true });
+    else
+      m.fitBounds(L.latLngBounds(fitTo), {
+        paddingTopLeft: [l, t],
+        paddingBottomRight: [r, b],
+        maxZoom: 16,
+        animate: true,
+      });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fitKey, fitPadding.join(',')]);
 

@@ -31,7 +31,11 @@ export async function refreshSession(): Promise<string | null> {
   if (!refreshing) {
     refreshing = (async () => {
       try {
-        const res = await fetch(`${BASE}/api/auth/refresh`, { method: 'POST', credentials: 'include', headers: { 'X-Client-App': APP } });
+        const res = await fetch(`${BASE}/api/auth/refresh`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'X-Client-App': APP },
+        });
         if (!res.ok) {
           useAuth.getState().clear();
           return null;
@@ -51,7 +55,12 @@ export async function refreshSession(): Promise<string | null> {
 
 type Body = Record<string, unknown> | unknown[] | FormData | undefined;
 
-async function request<T>(method: string, path: string, body?: Body, opts: { headers?: Record<string, string>; retry?: boolean } = {}): Promise<T> {
+async function request<T>(
+  method: string,
+  path: string,
+  body?: Body,
+  opts: { headers?: Record<string, string>; retry?: boolean } = {},
+): Promise<T> {
   const token = useAuth.getState().accessToken;
   const headers: Record<string, string> = { 'X-Client-App': APP, ...opts.headers };
   if (token) headers.Authorization = `Bearer ${token}`;
@@ -78,14 +87,20 @@ async function request<T>(method: string, path: string, body?: Body, opts: { hea
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     const err = (data as any)?.error ?? {};
-    throw new ApiError(res.status, err.code ?? 'ERROR', err.message ?? `Request failed (${res.status})`, err.details);
+    throw new ApiError(
+      res.status,
+      err.code ?? 'ERROR',
+      err.message ?? `Request failed (${res.status})`,
+      err.details,
+    );
   }
   return data as T;
 }
 
 export const api = {
   get: <T>(path: string) => request<T>('GET', path),
-  post: <T>(path: string, body?: Body, headers?: Record<string, string>) => request<T>('POST', path, body ?? {}, { headers }),
+  post: <T>(path: string, body?: Body, headers?: Record<string, string>) =>
+    request<T>('POST', path, body ?? {}, { headers }),
   put: <T>(path: string, body?: Body) => request<T>('PUT', path, body ?? {}),
   patch: <T>(path: string, body?: Body) => request<T>('PATCH', path, body ?? {}),
   del: <T>(path: string) => request<T>('DELETE', path),
@@ -93,7 +108,11 @@ export const api = {
 
 export async function logout() {
   try {
-    await fetch(`${BASE}/api/auth/logout`, { method: 'POST', credentials: 'include', headers: { 'X-Client-App': APP } });
+    await fetch(`${BASE}/api/auth/logout`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'X-Client-App': APP },
+    });
   } finally {
     useAuth.getState().clear();
   }

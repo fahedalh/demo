@@ -29,7 +29,14 @@ export interface ServerToClientEvents {
   'admin:driver_location': (p: DriverLocationPayload & { isOnline: boolean; busy: boolean }) => void;
   'admin:driver_offline': (p: { driverId: string }) => void;
   'admin:ride_event': (p: { rideId: string; status: string; code: string }) => void;
-  'admin:sos': (p: { rideId: string | null; userId: string; role: string; lat?: number; lng?: number; ticketId: string }) => void;
+  'admin:sos': (p: {
+    rideId: string | null;
+    userId: string;
+    role: string;
+    lat?: number;
+    lng?: number;
+    ticketId: string;
+  }) => void;
   'session:revoked': () => void;
 }
 

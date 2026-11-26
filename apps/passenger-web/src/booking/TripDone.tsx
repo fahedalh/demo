@@ -4,7 +4,18 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import type { PaymentType, RideDTO } from '@masar/shared';
-import { api, ApiError, Avatar, Button, cn, fileUrl, RatingStars, Textarea, toast, useFormat } from '@masar/ui';
+import {
+  api,
+  ApiError,
+  Avatar,
+  Button,
+  cn,
+  fileUrl,
+  RatingStars,
+  Textarea,
+  toast,
+  useFormat,
+} from '@masar/ui';
 import { PaymentPicker } from './PaymentPicker';
 
 const TAGS = ['clean', 'driving', 'polite', 'route', 'music'] as const;
@@ -23,7 +34,13 @@ export function TripDone({ ride, onClose }: { ride: RideDTO; onClose: () => void
   const pending = ride.status === 'PAYMENT_PENDING';
 
   const rate = useMutation({
-    mutationFn: () => api.post<{ ride: RideDTO }>(`/rides/${ride.id}/rate`, { score, comment: comment || undefined, tags: tags.map((k) => t(`done.tags.${k}`)), tip: tip || undefined }),
+    mutationFn: () =>
+      api.post<{ ride: RideDTO }>(`/rides/${ride.id}/rate`, {
+        score,
+        comment: comment || undefined,
+        tags: tags.map((k) => t(`done.tags.${k}`)),
+        tip: tip || undefined,
+      }),
     onSuccess: () => {
       toast.success(t('done.thanks'));
       void qc.invalidateQueries({ queryKey: ['rides'] });
@@ -33,7 +50,11 @@ export function TripDone({ ride, onClose }: { ride: RideDTO; onClose: () => void
   });
 
   const settle = useMutation({
-    mutationFn: () => api.post<{ status: string; ride: RideDTO }>(`/rides/${ride.id}/pay`, { paymentType: pay.type, paymentMethodId: pay.id ?? undefined }),
+    mutationFn: () =>
+      api.post<{ status: string; ride: RideDTO }>(`/rides/${ride.id}/pay`, {
+        paymentType: pay.type,
+        paymentMethodId: pay.id ?? undefined,
+      }),
     onSuccess: (r) => {
       qc.setQueryData(['ride', 'active'], r.ride);
       if (r.status === 'SUCCEEDED') toast.success(t('ride.status.PAYMENT_COMPLETED'));
@@ -46,7 +67,11 @@ export function TripDone({ ride, onClose }: { ride: RideDTO; onClose: () => void
 
   return (
     <div className="p-5">
-      <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="mx-auto mb-3 grid size-14 place-items-center rounded-full bg-accent/12">
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        className="mx-auto mb-3 grid size-14 place-items-center rounded-full bg-accent/12"
+      >
         <CheckCircle2 className="size-7 text-accent" />
       </motion.div>
       <h2 className="text-center text-2xl font-bold">{t('done.title')}</h2>
@@ -55,20 +80,36 @@ export function TripDone({ ride, onClose }: { ride: RideDTO; onClose: () => void
       <div className="mt-5 rounded-2xl bg-surface-2 p-4">
         <div className="flex items-baseline justify-between">
           <span className="font-medium">{t('done.total')}</span>
-          <span className="tabular text-2xl font-bold">{f.money(ride.finalFare ?? ride.estimatedFare, ride.currency)}</span>
+          <span className="tabular text-2xl font-bold">
+            {f.money(ride.finalFare ?? ride.estimatedFare, ride.currency)}
+          </span>
         </div>
         {b && (
           <div className="mt-3 space-y-1 border-t border-line pt-3 text-sm text-muted">
             <Row label={t('rides.base')} value={f.money(b.baseFare, ride.currency)} />
             <Row label={t('rides.distance')} value={f.money(b.distanceFare, ride.currency)} />
             <Row label={t('rides.time')} value={f.money(b.timeFare, ride.currency)} />
-            {b.surgeAmount > 0 && <Row label={t('rides.surgeFee')} value={f.money(b.surgeAmount, ride.currency)} />}
-            {b.bookingFee > 0 && <Row label={t('rides.booking')} value={f.money(b.bookingFee, ride.currency)} />}
-            {ride.discount > 0 && <Row label={t('rides.discount')} value={`−${f.money(ride.discount, ride.currency)}`} className="text-accent-600" />}
+            {b.surgeAmount > 0 && (
+              <Row label={t('rides.surgeFee')} value={f.money(b.surgeAmount, ride.currency)} />
+            )}
+            {b.bookingFee > 0 && (
+              <Row label={t('rides.booking')} value={f.money(b.bookingFee, ride.currency)} />
+            )}
+            {ride.discount > 0 && (
+              <Row
+                label={t('rides.discount')}
+                value={`−${f.money(ride.discount, ride.currency)}`}
+                className="text-accent-600"
+              />
+            )}
           </div>
         )}
         <p className="mt-3 text-xs text-muted">
-          {ride.paymentType === 'CASH' ? t('done.cash') : pending ? '' : t('done.paid', { method: t(`ride.payment.${ride.paymentType}`) })}
+          {ride.paymentType === 'CASH'
+            ? t('done.cash')
+            : pending
+              ? ''
+              : t('done.paid', { method: t(`ride.payment.${ride.paymentType}`) })}
         </p>
       </div>
 
@@ -81,7 +122,9 @@ export function TripDone({ ride, onClose }: { ride: RideDTO; onClose: () => void
               <p className="text-sm text-muted">{t('done.paymentFailedHelp')}</p>
             </div>
           </div>
-          <div className="mt-3"><PaymentPicker value={pay} onChange={setPay} /></div>
+          <div className="mt-3">
+            <PaymentPicker value={pay} onChange={setPay} />
+          </div>
           <Button block className="mt-3" loading={settle.isPending} onClick={() => settle.mutate()}>
             {t('done.payNow', { amount: f.money(ride.finalFare ?? 0, ride.currency) })}
           </Button>
@@ -91,24 +134,48 @@ export function TripDone({ ride, onClose }: { ride: RideDTO; onClose: () => void
       {driver && !pending && (
         <div className="mt-6">
           <div className="flex flex-col items-center gap-2">
-            <Avatar name={`${driver.firstName} ${driver.lastName}`} src={fileUrl(driver.avatarUrl)} size={56} />
+            <Avatar
+              name={`${driver.firstName} ${driver.lastName}`}
+              src={fileUrl(driver.avatarUrl)}
+              size={56}
+            />
             <p className="text-center font-semibold">{t('done.rate', { name: driver.firstName })}</p>
             <RatingStars value={score} onChange={setScore} size={34} />
           </div>
           <div className="mt-4 flex flex-wrap justify-center gap-2">
             {TAGS.map((k) => (
-              <button key={k} onClick={() => setTags((s) => (s.includes(k) ? s.filter((x) => x !== k) : [...s, k]))} className={cn('rounded-full px-3 py-1.5 text-sm font-medium ring-1 transition', tags.includes(k) ? 'bg-primary text-primary-fg ring-primary' : 'ring-line hover:ring-fg')}>
+              <button
+                key={k}
+                onClick={() => setTags((s) => (s.includes(k) ? s.filter((x) => x !== k) : [...s, k]))}
+                className={cn(
+                  'rounded-full px-3 py-1.5 text-sm font-medium ring-1 transition',
+                  tags.includes(k) ? 'bg-primary text-primary-fg ring-primary' : 'ring-line hover:ring-fg',
+                )}
+              >
                 {t(`done.tags.${k}`)}
               </button>
             ))}
           </div>
-          <Textarea className="mt-4" value={comment} maxLength={500} onChange={(e) => setComment(e.target.value)} placeholder={t('done.comment')} />
+          <Textarea
+            className="mt-4"
+            value={comment}
+            maxLength={500}
+            onChange={(e) => setComment(e.target.value)}
+            placeholder={t('done.comment')}
+          />
           {ride.paymentType !== 'CASH' && (
             <div className="mt-4">
               <p className="mb-2 text-sm font-semibold">{t('done.tip')}</p>
               <div className="grid grid-cols-4 gap-2">
                 {TIPS.map((v) => (
-                  <button key={v} onClick={() => setTip(v)} className={cn('h-11 rounded-xl text-sm font-semibold ring-1 transition', tip === v ? 'bg-primary text-primary-fg ring-primary' : 'ring-line hover:ring-fg')}>
+                  <button
+                    key={v}
+                    onClick={() => setTip(v)}
+                    className={cn(
+                      'h-11 rounded-xl text-sm font-semibold ring-1 transition',
+                      tip === v ? 'bg-primary text-primary-fg ring-primary' : 'ring-line hover:ring-fg',
+                    )}
+                  >
                     {v === 0 ? t('done.noTip') : f.money(v, ride.currency).replace(/\.00/, '')}
                   </button>
                 ))}
@@ -116,8 +183,12 @@ export function TripDone({ ride, onClose }: { ride: RideDTO; onClose: () => void
             </div>
           )}
           <div className="mt-5 grid grid-cols-[1fr_2fr] gap-2">
-            <Button variant="secondary" size="lg" onClick={onClose}>{t('done.skip')}</Button>
-            <Button size="lg" loading={rate.isPending} onClick={() => rate.mutate()}>{t('done.submit')}</Button>
+            <Button variant="secondary" size="lg" onClick={onClose}>
+              {t('done.skip')}
+            </Button>
+            <Button size="lg" loading={rate.isPending} onClick={() => rate.mutate()}>
+              {t('done.submit')}
+            </Button>
           </div>
         </div>
       )}

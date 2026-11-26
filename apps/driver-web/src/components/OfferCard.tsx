@@ -34,7 +34,10 @@ export function OfferCard({ offer, onClose }: { offer: RideOfferDTO; onClose: ()
       onClose();
     },
   });
-  const decline = useMutation({ mutationFn: () => api.post(`/driver/offers/${offer.offerId}/reject`), onSettled: onClose });
+  const decline = useMutation({
+    mutationFn: () => api.post(`/driver/offers/${offer.offerId}/reject`),
+    onSettled: onClose,
+  });
 
   const r = offer.ride;
   const pct = Math.max(0, Math.min(1, left / Math.min(total, 30)));
@@ -53,9 +56,22 @@ export function OfferCard({ offer, onClose }: { offer: RideOfferDTO; onClose: ()
         <div className="relative size-16 shrink-0">
           <svg viewBox="0 0 60 60" className="size-16 -rotate-90">
             <circle cx="30" cy="30" r="26" fill="none" stroke="var(--line)" strokeWidth="5" />
-            <circle cx="30" cy="30" r="26" fill="none" stroke="#06C167" strokeWidth="5" strokeLinecap="round" strokeDasharray={C} strokeDashoffset={C * (1 - pct)} style={{ transition: 'stroke-dashoffset .2s linear' }} />
+            <circle
+              cx="30"
+              cy="30"
+              r="26"
+              fill="none"
+              stroke="#06C167"
+              strokeWidth="5"
+              strokeLinecap="round"
+              strokeDasharray={C}
+              strokeDashoffset={C * (1 - pct)}
+              style={{ transition: 'stroke-dashoffset .2s linear' }}
+            />
           </svg>
-          <span className="tabular absolute inset-0 grid place-items-center text-lg font-bold">{Math.max(0, Math.ceil(left))}</span>
+          <span className="tabular absolute inset-0 grid place-items-center text-lg font-bold">
+            {Math.max(0, Math.ceil(left))}
+          </span>
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
@@ -69,7 +85,10 @@ export function OfferCard({ offer, onClose }: { offer: RideOfferDTO; onClose: ()
         {r.passenger && (
           <div className="text-end text-sm">
             <p className="font-semibold">{r.passenger.firstName}</p>
-            <p className="inline-flex items-center gap-1 text-muted"><Star className="size-3.5 fill-amber-400 text-amber-400" />{r.passenger.rating.toFixed(1)}</p>
+            <p className="inline-flex items-center gap-1 text-muted">
+              <Star className="size-3.5 fill-amber-400 text-amber-400" />
+              {r.passenger.rating.toFixed(1)}
+            </p>
           </div>
         )}
       </div>
@@ -79,24 +98,53 @@ export function OfferCard({ offer, onClose }: { offer: RideOfferDTO; onClose: ()
           <span className="mt-1.5 size-2.5 shrink-0 rounded-full bg-fg" />
           <div className="min-w-0">
             <p className="truncate font-semibold">{r.pickup.address}</p>
-            <p className="text-xs text-muted">{t('offer.pickupIn', { min: Math.max(1, Math.round(offer.pickupEtaSeconds / 60)), distance: f.distance(offer.pickupDistanceMeters) })}</p>
+            <p className="text-xs text-muted">
+              {t('offer.pickupIn', {
+                min: Math.max(1, Math.round(offer.pickupEtaSeconds / 60)),
+                distance: f.distance(offer.pickupDistanceMeters),
+              })}
+            </p>
           </div>
         </div>
         <div className="flex gap-3">
           <span className="mt-1.5 size-2.5 shrink-0 bg-fg" />
           <div className="min-w-0">
             <p className="truncate font-semibold">{r.dropoff.address}</p>
-            <p className="text-xs text-muted">{t('offer.trip', { distance: f.distance(r.estimatedDistanceMeters), duration: f.duration(r.estimatedDurationSeconds) })}</p>
+            <p className="text-xs text-muted">
+              {t('offer.trip', {
+                distance: f.distance(r.estimatedDistanceMeters),
+                duration: f.duration(r.estimatedDurationSeconds),
+              })}
+            </p>
           </div>
         </div>
         {r.pickupNotes && (
-          <p className="flex gap-2 border-t border-line pt-3 text-sm"><MessageSquareText className="mt-0.5 size-4 shrink-0 text-muted" />{r.pickupNotes}</p>
+          <p className="flex gap-2 border-t border-line pt-3 text-sm">
+            <MessageSquareText className="mt-0.5 size-4 shrink-0 text-muted" />
+            {r.pickupNotes}
+          </p>
         )}
       </div>
 
       <div className="mt-4 grid grid-cols-[1fr_2fr] gap-3">
-        <Button size="lg" variant="secondary" className="h-16" loading={decline.isPending} onClick={() => decline.mutate()}>{t('offer.decline')}</Button>
-        <Button size="lg" variant="accent" className="h-16 text-lg" loading={accept.isPending} onClick={() => accept.mutate()}>{t('offer.accept')}</Button>
+        <Button
+          size="lg"
+          variant="secondary"
+          className="h-16"
+          loading={decline.isPending}
+          onClick={() => decline.mutate()}
+        >
+          {t('offer.decline')}
+        </Button>
+        <Button
+          size="lg"
+          variant="accent"
+          className="h-16 text-lg"
+          loading={accept.isPending}
+          onClick={() => accept.mutate()}
+        >
+          {t('offer.accept')}
+        </Button>
       </div>
     </motion.div>
   );

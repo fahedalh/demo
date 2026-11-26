@@ -39,7 +39,10 @@ export async function teardownAll() {
 export const APP = { passenger: 'passenger', driver: 'driver', admin: 'admin' } as const;
 
 export async function login(url: string, app: keyof typeof APP, identifier: string, password: string) {
-  const res = await request(url).post('/api/auth/login').set('X-Client-App', app).send({ identifier, password });
+  const res = await request(url)
+    .post('/api/auth/login')
+    .set('X-Client-App', app)
+    .send({ identifier, password });
   if (res.status !== 200) throw new Error(`login failed ${res.status} ${JSON.stringify(res.body)}`);
   return res.body.accessToken as string;
 }
@@ -65,7 +68,12 @@ export function connectSocket(url: string, token: string): Promise<Socket> {
 }
 
 /** Resolves with the first event payload that matches `pred`. */
-export function waitFor<T = any>(socket: Socket, event: string, pred: (p: T) => boolean = () => true, timeoutMs = 8000): Promise<T> {
+export function waitFor<T = any>(
+  socket: Socket,
+  event: string,
+  pred: (p: T) => boolean = () => true,
+  timeoutMs = 8000,
+): Promise<T> {
   return new Promise((resolve, reject) => {
     const t = setTimeout(() => {
       socket.off(event, handler);

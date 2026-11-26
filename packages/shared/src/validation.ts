@@ -45,7 +45,9 @@ export const otpRequestSchema = z.object({
   target: z.string().trim().min(3),
   purpose: z.enum(['VERIFY_PHONE', 'VERIFY_EMAIL', 'RESET_PASSWORD', 'LOGIN']),
 });
-export const otpVerifySchema = otpRequestSchema.extend({ code: z.string().regex(/^\d{6}$/, 'Enter the 6-digit code') });
+export const otpVerifySchema = otpRequestSchema.extend({
+  code: z.string().regex(/^\d{6}$/, 'Enter the 6-digit code'),
+});
 
 export const forgotPasswordSchema = z.object({ identifier: z.string().trim().min(3) });
 export const resetPasswordSchema = z.object({
@@ -53,7 +55,10 @@ export const resetPasswordSchema = z.object({
   code: z.string().regex(/^\d{6}$/, 'Enter the 6-digit code'),
   password: passwordSchema,
 });
-export const changePasswordSchema = z.object({ currentPassword: z.string().min(1), newPassword: passwordSchema });
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1),
+  newPassword: passwordSchema,
+});
 
 export const updateProfileSchema = z.object({
   firstName: z.string().trim().min(1).max(60).optional(),
@@ -130,7 +135,11 @@ export const vehicleSchema = z.object({
   categoryCode: z.string().min(2).max(30),
   make: z.string().trim().min(1, 'Make is required').max(40),
   model: z.string().trim().min(1, 'Model is required').max(40),
-  year: z.coerce.number().int().min(2005).max(new Date().getFullYear() + 1),
+  year: z.coerce
+    .number()
+    .int()
+    .min(2005)
+    .max(new Date().getFullYear() + 1),
   color: z.string().trim().min(1, 'Color is required').max(30),
   plateNumber: z.string().trim().min(2, 'Plate number is required').max(20).toUpperCase(),
   seats: z.coerce.number().int().min(2).max(8),
@@ -165,9 +174,17 @@ export const payoutRequestSchema = z.object({
 export const addCardSchema = z.object({
   // Sandbox only: the raw number is validated and discarded — only brand/last4 are kept.
   // With Stripe configured, the client sends a Stripe PaymentMethod id instead.
-  cardNumber: z.string().regex(/^\d{12,19}$/).optional(),
+  cardNumber: z
+    .string()
+    .regex(/^\d{12,19}$/)
+    .optional(),
   expMonth: z.number().int().min(1).max(12).optional(),
-  expYear: z.number().int().min(new Date().getFullYear()).max(new Date().getFullYear() + 20).optional(),
+  expYear: z
+    .number()
+    .int()
+    .min(new Date().getFullYear())
+    .max(new Date().getFullYear() + 20)
+    .optional(),
   providerPaymentMethodId: z.string().optional(),
   makeDefault: z.boolean().default(false),
 });
@@ -184,7 +201,10 @@ export const supportTicketSchema = z.object({
   rideId: z.string().optional(),
 });
 
-export const ticketReplySchema = z.object({ body: z.string().trim().min(1).max(4000), isInternal: z.boolean().optional() });
+export const ticketReplySchema = z.object({
+  body: z.string().trim().min(1).max(4000),
+  isInternal: z.boolean().optional(),
+});
 
 // ---------- Admin ----------
 export const pricingUpdateSchema = z.object({
@@ -200,7 +220,11 @@ export const pricingUpdateSchema = z.object({
 });
 
 export const couponSchema = z.object({
-  code: z.string().trim().toUpperCase().regex(/^[A-Z0-9_-]{3,30}$/, '3–30 letters, digits, - or _'),
+  code: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^[A-Z0-9_-]{3,30}$/, '3–30 letters, digits, - or _'),
   description: z.string().trim().max(200).optional(),
   type: z.enum(['PERCENT', 'FIXED']),
   value: z.number().int().positive(),
@@ -214,7 +238,11 @@ export const couponSchema = z.object({
 });
 
 export const categorySchema = z.object({
-  code: z.string().trim().toUpperCase().regex(/^[A-Z_]{2,30}$/),
+  code: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^[A-Z_]{2,30}$/),
   name: z.string().trim().min(1).max(40),
   nameAr: z.string().trim().min(1).max(40),
   description: z.string().trim().max(200).optional(),
@@ -244,7 +272,10 @@ export const broadcastSchema = z.object({
   body: z.string().trim().min(1).max(1000),
 });
 
-export const refundSchema = z.object({ amount: z.number().int().positive(), reason: z.string().trim().min(3).max(300) });
+export const refundSchema = z.object({
+  amount: z.number().int().positive(),
+  reason: z.string().trim().min(3).max(300),
+});
 
 export const driverReviewSchema = z.object({
   decision: z.enum(['APPROVE', 'REJECT', 'REQUEST_INFO']),
@@ -256,8 +287,13 @@ export const documentReviewSchema = z.object({
   note: z.string().trim().max(500).optional(),
 });
 
-export const userStatusSchema = z.object({ status: z.enum(['ACTIVE', 'SUSPENDED']), reason: z.string().max(300).optional() });
-export const adminRoleSchema = z.object({ adminRole: z.enum(['SUPER_ADMIN', 'OPERATIONS', 'FINANCE', 'SUPPORT']) });
+export const userStatusSchema = z.object({
+  status: z.enum(['ACTIVE', 'SUSPENDED']),
+  reason: z.string().max(300).optional(),
+});
+export const adminRoleSchema = z.object({
+  adminRole: z.enum(['SUPER_ADMIN', 'OPERATIONS', 'FINANCE', 'SUPPORT']),
+});
 
 export const settingsSchema = z.object({
   dispatchRadiusKm: z.number().min(1).max(50),

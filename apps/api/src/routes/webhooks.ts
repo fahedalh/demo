@@ -12,7 +12,8 @@ import { broadcastRide, SYSTEM, transition } from '../services/ride.service';
 export const webhooksRouter = Router();
 
 webhooksRouter.post('/payments', express.raw({ type: '*/*', limit: '1mb' }), async (req, res) => {
-  const signature = (req.headers['stripe-signature'] ?? req.headers['x-sandbox-signature']) as string | undefined;
+  const signature = (req.headers['stripe-signature'] ?? req.headers['x-sandbox-signature']) as
+    string | undefined;
   const event = gateway.parseWebhook(req.body as Buffer, signature);
 
   // Idempotency: providers retry deliveries; process each event id once.
@@ -23,18 +24,34 @@ webhooksRouter.post('/payments', express.raw({ type: '*/*', limit: '1mb' }), asy
     const payment = await prisma.payment.findFirst({ where: { providerRef: event.providerRef } });
     if (payment) {
       if (event.type === 'payment.succeeded' && payment.status !== 'SUCCEEDED') {
-        await prisma.payment.update({ where: { id: payment.id }, data: { status: 'SUCCEEDED', paidAt: new Date(), failureReason: null } });
+        await prisma.payment.update({
+          where: { id: payment.id },
+          data: { status: 'SUCCEEDED', paidAt: new Date(), failureReason: null },
+        });
         if (payment.rideId) {
           const ride = await prisma.ride.findUnique({ where: { id: payment.rideId } });
           if (ride?.status === 'PAYMENT_PENDING') {
-            await transition(ride.id, 'PAYMENT_PENDING', 'PAYMENT_COMPLETED', SYSTEM, {}, `webhook ${event.id}`);
+            await transition(
+              ride.id,
+              'PAYMENT_PENDING',
+              'PAYMENT_COMPLETED',
+              SYSTEM,
+              {},
+              `webhook ${event.id}`,
+            );
             await broadcastRide(ride.id);
           }
         }
       } else if (event.type === 'payment.failed' && payment.status === 'PENDING') {
-        await prisma.payment.update({ where: { id: payment.id }, data: { status: 'FAILED', failureReason: 'Declined (webhook)' } });
+        await prisma.payment.update({
+          where: { id: payment.id },
+          data: { status: 'FAILED', failureReason: 'Declined (webhook)' },
+        });
       } else if (event.type === 'refund.succeeded') {
-        await prisma.refund.updateMany({ where: { paymentId: payment.id, status: 'PENDING' }, data: { status: 'SUCCEEDED' } });
+        await prisma.refund.updateMany({
+          where: { paymentId: payment.id, status: 'PENDING' },
+          data: { status: 'SUCCEEDED' },
+        });
       }
     }
   }

@@ -12,3 +12,4 @@ test-results
 .vite
 *.tsbuildinfo
 apps/api/storage-test/
+test-results/

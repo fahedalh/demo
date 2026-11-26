@@ -1,7 +1,19 @@
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { AlertTriangle, Languages, Moon, Star, Sun, Monitor, WifiOff, Inbox, ChevronLeft, ChevronRight, Download } from 'lucide-react';
+import {
+  AlertTriangle,
+  Languages,
+  Moon,
+  Star,
+  Sun,
+  Monitor,
+  WifiOff,
+  Inbox,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+} from 'lucide-react';
 import type { RideStatus } from '@masar/shared';
 import { cn } from '../lib/cn';
 import { useTheme, type Theme } from '../lib/theme';
@@ -9,13 +21,28 @@ import { useSocketStatus } from '../lib/socket';
 import { Badge, Button } from './primitives';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './overlays';
 
-export function Logo({ className, suffix, inverted }: { className?: string; suffix?: string; inverted?: boolean }) {
+export function Logo({
+  className,
+  suffix,
+  inverted,
+}: {
+  className?: string;
+  suffix?: string;
+  inverted?: boolean;
+}) {
   const { t } = useTranslation();
   return (
     <span className={cn('inline-flex items-center gap-2 font-bold tracking-tight', className)}>
-      <span className={cn('grid size-8 place-items-center rounded-[10px]', inverted ? 'bg-white' : 'bg-primary')}>
+      <span
+        className={cn('grid size-8 place-items-center rounded-[10px]', inverted ? 'bg-white' : 'bg-primary')}
+      >
         <svg viewBox="0 0 24 24" className="size-5" fill="none" aria-hidden>
-          <path d="M5 18c3.5 0 4-12 7-12s3.5 12 7 12" stroke="#06C167" strokeWidth="2.6" strokeLinecap="round" />
+          <path
+            d="M5 18c3.5 0 4-12 7-12s3.5 12 7 12"
+            stroke="#06C167"
+            strokeWidth="2.6"
+            strokeLinecap="round"
+          />
           <circle cx="5" cy="18" r="1.9" fill={inverted ? '#111' : 'var(--primary-fg)'} />
           <circle cx="19" cy="18" r="1.9" fill={inverted ? '#111' : 'var(--primary-fg)'} />
         </svg>
@@ -41,7 +68,11 @@ export function ThemeToggle({ className }: { className?: string }) {
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         {(['light', 'dark', 'system'] as Theme[]).map((th) => (
-          <DropdownMenuItem key={th} onSelect={() => setTheme(th)} className={cn(theme === th && 'font-semibold')}>
+          <DropdownMenuItem
+            key={th}
+            onSelect={() => setTheme(th)}
+            className={cn(theme === th && 'font-semibold')}
+          >
             {th === 'light' ? <Sun /> : th === 'dark' ? <Moon /> : <Monitor />}
             {t(`settings.${th}`)}
           </DropdownMenuItem>
@@ -51,7 +82,13 @@ export function ThemeToggle({ className }: { className?: string }) {
   );
 }
 
-export function LanguageToggle({ className, onChange }: { className?: string; onChange?: (lng: 'en' | 'ar') => void }) {
+export function LanguageToggle({
+  className,
+  onChange,
+}: {
+  className?: string;
+  onChange?: (lng: 'en' | 'ar') => void;
+}) {
   const { i18n, t } = useTranslation();
   const next = i18n.language === 'ar' ? 'en' : 'ar';
   return (
@@ -71,11 +108,24 @@ export function LanguageToggle({ className, onChange }: { className?: string; on
   );
 }
 
-export function RatingStars({ value, size = 16, onChange, className }: { value: number; size?: number; onChange?: (v: number) => void; className?: string }) {
+export function RatingStars({
+  value,
+  size = 16,
+  onChange,
+  className,
+}: {
+  value: number;
+  size?: number;
+  onChange?: (v: number) => void;
+  className?: string;
+}) {
   const [hover, setHover] = React.useState<number | null>(null);
   const shown = hover ?? value;
   return (
-    <div className={cn('inline-flex items-center gap-1', className)} role={onChange ? 'radiogroup' : undefined}>
+    <div
+      className={cn('inline-flex items-center gap-1', className)}
+      role={onChange ? 'radiogroup' : undefined}
+    >
       {[1, 2, 3, 4, 5].map((i) => (
         <button
           key={i}
@@ -87,7 +137,12 @@ export function RatingStars({ value, size = 16, onChange, className }: { value: 
           onClick={() => onChange?.(i)}
           className={cn('transition-transform', onChange && 'hover:scale-110 active:scale-95')}
         >
-          <Star style={{ width: size, height: size }} className={cn(i <= Math.round(shown) ? 'fill-amber-400 text-amber-400' : 'fill-transparent text-line')} />
+          <Star
+            style={{ width: size, height: size }}
+            className={cn(
+              i <= Math.round(shown) ? 'fill-amber-400 text-amber-400' : 'fill-transparent text-line',
+            )}
+          />
         </button>
       ))}
     </div>
@@ -115,7 +170,19 @@ export function RideStatusBadge({ status, scheduled }: { status: RideStatus; sch
   return <Badge tone={statusTone[status]}>{t(`ride.status.${status}`)}</Badge>;
 }
 
-export function EmptyState({ icon: Icon = Inbox, title, description, action, className }: { icon?: React.ComponentType<{ className?: string }>; title: string; description?: string; action?: React.ReactNode; className?: string }) {
+export function EmptyState({
+  icon: Icon = Inbox,
+  title,
+  description,
+  action,
+  className,
+}: {
+  icon?: React.ComponentType<{ className?: string }>;
+  title: string;
+  description?: string;
+  action?: React.ReactNode;
+  className?: string;
+}) {
   return (
     <div className={cn('flex flex-col items-center justify-center px-6 py-14 text-center', className)}>
       <div className="mb-4 grid size-14 place-items-center rounded-2xl bg-surface-2">
@@ -146,7 +213,21 @@ export function ErrorState({ message, onRetry }: { message?: string; onRetry?: (
   );
 }
 
-export function StatCard({ label, value, hint, icon: Icon, trend, className }: { label: string; value: React.ReactNode; hint?: React.ReactNode; icon?: React.ComponentType<{ className?: string }>; trend?: number | null; className?: string }) {
+export function StatCard({
+  label,
+  value,
+  hint,
+  icon: Icon,
+  trend,
+  className,
+}: {
+  label: string;
+  value: React.ReactNode;
+  hint?: React.ReactNode;
+  icon?: React.ComponentType<{ className?: string }>;
+  trend?: number | null;
+  className?: string;
+}) {
   return (
     <div className={cn('rounded-2xl border border-line bg-surface p-5 shadow-soft', className)}>
       <div className="flex items-center justify-between">
@@ -160,7 +241,11 @@ export function StatCard({ label, value, hint, icon: Icon, trend, className }: {
       <div className="tabular mt-3 text-2xl font-bold tracking-tight">{value}</div>
       {(hint || trend != null) && (
         <div className="mt-1 flex items-center gap-2 text-xs text-muted">
-          {trend != null && <span className={cn('font-semibold', trend >= 0 ? 'text-accent-600' : 'text-danger')}>{trend >= 0 ? '▲' : '▼'} {Math.abs(trend)}%</span>}
+          {trend != null && (
+            <span className={cn('font-semibold', trend >= 0 ? 'text-accent-600' : 'text-danger')}>
+              {trend >= 0 ? '▲' : '▼'} {Math.abs(trend)}%
+            </span>
+          )}
           {hint}
         </div>
       )}
@@ -185,23 +270,47 @@ export function ConnectionBanner() {
   }, []);
   if ((connected || !everConnected) && online) return null;
   return (
-    <motion.div initial={{ y: -40 }} animate={{ y: 0 }} className="fixed inset-x-0 top-0 z-[2000] flex items-center justify-center gap-2 bg-amber-500 py-1.5 text-xs font-semibold text-black">
+    <motion.div
+      initial={{ y: -40 }}
+      animate={{ y: 0 }}
+      className="fixed inset-x-0 top-0 z-[2000] flex items-center justify-center gap-2 bg-amber-500 py-1.5 text-xs font-semibold text-black"
+    >
       <WifiOff className="size-3.5" /> {online ? t('state.offline') : t('errors.network')}
     </motion.div>
   );
 }
 
-export function Pagination({ page, totalPages, onPage }: { page: number; totalPages: number; onPage: (p: number) => void }) {
+export function Pagination({
+  page,
+  totalPages,
+  onPage,
+}: {
+  page: number;
+  totalPages: number;
+  onPage: (p: number) => void;
+}) {
   if (totalPages <= 1) return null;
   return (
     <div className="flex items-center justify-end gap-2 pt-4">
-      <Button variant="outline" size="icon-sm" disabled={page <= 1} onClick={() => onPage(page - 1)} aria-label="Previous page">
+      <Button
+        variant="outline"
+        size="icon-sm"
+        disabled={page <= 1}
+        onClick={() => onPage(page - 1)}
+        aria-label="Previous page"
+      >
         <ChevronLeft className="rtl:rotate-180" />
       </Button>
       <span className="tabular text-sm text-muted">
         {page} / {totalPages}
       </span>
-      <Button variant="outline" size="icon-sm" disabled={page >= totalPages} onClick={() => onPage(page + 1)} aria-label="Next page">
+      <Button
+        variant="outline"
+        size="icon-sm"
+        disabled={page >= totalPages}
+        onClick={() => onPage(page + 1)}
+        aria-label="Next page"
+      >
         <ChevronRight className="rtl:rotate-180" />
       </Button>
     </div>

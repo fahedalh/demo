@@ -8,7 +8,10 @@ const schema = z.object({
   PUBLIC_API_URL: z.string().default('http://localhost:4000'),
   DATABASE_URL: z.string().min(1),
   REDIS_URL: z.string().default('redis://localhost:6379'),
-  SOCKET_REDIS_ADAPTER: z.string().default('false').transform((v) => v === 'true'),
+  SOCKET_REDIS_ADAPTER: z
+    .string()
+    .default('false')
+    .transform((v) => v === 'true'),
   JWT_ACCESS_SECRET: z.string().min(32, 'JWT_ACCESS_SECRET must be at least 32 characters'),
   JWT_REFRESH_SECRET: z.string().min(32, 'JWT_REFRESH_SECRET must be at least 32 characters'),
   ACCESS_TOKEN_TTL: z.string().default('15m'),
@@ -48,5 +51,7 @@ export const env = {
   ...e,
   isProd: e.NODE_ENV === 'production',
   isTest: e.NODE_ENV === 'test',
-  corsOrigins: e.CORS_ORIGINS.split(',').map((s) => s.trim()).filter(Boolean),
+  corsOrigins: e.CORS_ORIGINS.split(',')
+    .map((s) => s.trim())
+    .filter(Boolean),
 };

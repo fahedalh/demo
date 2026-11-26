@@ -10,7 +10,8 @@ export function TripsPage() {
   const q = useInfiniteQuery({
     queryKey: ['driver', 'trips'],
     initialPageParam: 1,
-    queryFn: ({ pageParam }) => api.get<Paginated<RideDTO>>(`/rides?scope=past&page=${pageParam}&pageSize=15`),
+    queryFn: ({ pageParam }) =>
+      api.get<Paginated<RideDTO>>(`/rides?scope=past&page=${pageParam}&pageSize=15`),
     getNextPageParam: (l) => (l.page < l.totalPages ? l.page + 1 : undefined),
   });
   const rides = q.data?.pages.flatMap((p) => p.items) ?? [];
@@ -23,10 +24,16 @@ export function TripsPage() {
         <Card key={r.id} className="p-4">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-xs text-muted">{f.dateTime(r.completedAt ?? r.requestedAt)} · <span className="font-mono">{r.code}</span> · {i18n.language === 'ar' ? r.category.nameAr : r.category.name}</p>
+              <p className="text-xs text-muted">
+                {f.dateTime(r.completedAt ?? r.requestedAt)} · <span className="font-mono">{r.code}</span> ·{' '}
+                {i18n.language === 'ar' ? r.category.nameAr : r.category.name}
+              </p>
               <p className="mt-1 truncate font-semibold">{r.pickup.address}</p>
               <p className="truncate text-sm text-muted">→ {r.dropoff.address}</p>
-              <div className="mt-2 flex items-center gap-2"><RideStatusBadge status={r.status} />{r.myRating && <RatingStars value={r.myRating.score} size={12} />}</div>
+              <div className="mt-2 flex items-center gap-2">
+                <RideStatusBadge status={r.status} />
+                {r.myRating && <RatingStars value={r.myRating.score} size={12} />}
+              </div>
             </div>
             <div className="text-end">
               <p className="tabular font-bold">{f.money((r.driverEarning?.net ?? 0) + r.tip, r.currency)}</p>
@@ -36,7 +43,11 @@ export function TripsPage() {
           </div>
         </Card>
       ))}
-      {q.hasNextPage && <Button variant="outline" block loading={q.isFetchingNextPage} onClick={() => void q.fetchNextPage()}>{t('actions.loadMore')}</Button>}
+      {q.hasNextPage && (
+        <Button variant="outline" block loading={q.isFetchingNextPage} onClick={() => void q.fetchNextPage()}>
+          {t('actions.loadMore')}
+        </Button>
+      )}
     </div>
   );
 }

@@ -74,7 +74,12 @@ export function PlaceSearchInput({
         className="h-12 w-full rounded-xl bg-surface-2 ps-11 pe-10 text-[15px] font-medium text-fg outline-none placeholder:font-normal placeholder:text-muted focus:ring-2 focus:ring-fg/80"
       />
       {value && (
-        <button type="button" onClick={() => onChange('')} className="absolute end-3 rounded-full p-1 text-muted hover:text-fg" aria-label="Clear">
+        <button
+          type="button"
+          onClick={() => onChange('')}
+          className="absolute end-3 rounded-full p-1 text-muted hover:text-fg"
+          aria-label="Clear"
+        >
           <X className="size-4" />
         </button>
       )}
@@ -105,9 +110,16 @@ export function PlaceResults({
         </div>
       )}
       {isError && <div className="px-2 py-4 text-sm text-danger">{t('errors.generic')}</div>}
-      {!isFetching && !isError && items.length === 0 && <div className="px-2 py-4 text-sm text-muted">{t('state.empty')}</div>}
+      {!isFetching && !isError && items.length === 0 && (
+        <div className="px-2 py-4 text-sm text-muted">{t('state.empty')}</div>
+      )}
       {items.map((p) => (
-        <button key={p.id} type="button" onClick={() => onSelect(p)} className="flex w-full items-center gap-3 px-2 py-3 text-start transition hover:bg-surface-2 rounded-xl">
+        <button
+          key={p.id}
+          type="button"
+          onClick={() => onSelect(p)}
+          className="flex w-full items-center gap-3 px-2 py-3 text-start transition hover:bg-surface-2 rounded-xl"
+        >
           <span className="grid size-9 shrink-0 place-items-center rounded-full bg-surface-2">
             <MapPin className="size-4" />
           </span>

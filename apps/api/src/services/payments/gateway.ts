@@ -44,7 +44,10 @@ export interface WebhookEvent {
 export interface PaymentGateway {
   readonly name: 'SANDBOX' | 'STRIPE';
   /** Prepares a card-collection session (Stripe SetupIntent); sandbox returns null. */
-  createSetupSession(customerRef: string | null, email?: string | null): Promise<{ clientSecret: string; customerRef: string } | null>;
+  createSetupSession(
+    customerRef: string | null,
+    email?: string | null,
+  ): Promise<{ clientSecret: string; customerRef: string } | null>;
   /** Saves a card. Sandbox receives a test PAN (discarded after validation); Stripe receives a pm_ id. */
   tokenizeCard(input: {
     cardNumber?: string;

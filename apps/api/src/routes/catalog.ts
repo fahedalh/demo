@@ -10,7 +10,10 @@ import { env } from '../config/env';
 export const catalogRouter = Router();
 
 catalogRouter.get('/categories', async (_req, res) => {
-  const cats = await prisma.vehicleCategory.findMany({ where: { isActive: true }, orderBy: { sortOrder: 'asc' } });
+  const cats = await prisma.vehicleCategory.findMany({
+    where: { isActive: true },
+    orderBy: { sortOrder: 'asc' },
+  });
   res.json({ items: cats.map(toCategoryDTO) });
 });
 
@@ -18,14 +21,31 @@ catalogRouter.get('/promotions', async (_req, res) => {
   const now = new Date();
   const items = await prisma.promotion.findMany({
     where: { isActive: true, startsAt: { lte: now }, OR: [{ endsAt: null }, { endsAt: { gt: now } }] },
-    include: { coupons: { where: { isActive: true, deletedAt: null }, select: { code: true, type: true, value: true, maxDiscount: true } } },
+    include: {
+      coupons: {
+        where: { isActive: true, deletedAt: null },
+        select: { code: true, type: true, value: true, maxDiscount: true },
+      },
+    },
     orderBy: { createdAt: 'desc' },
   });
   res.json({ items });
 });
 
 catalogRouter.get('/service-areas', async (_req, res) => {
-  const items = await prisma.serviceArea.findMany({ where: { isActive: true }, select: { id: true, name: true, nameAr: true, city: true, centerLat: true, centerLng: true, radiusKm: true, currency: true } });
+  const items = await prisma.serviceArea.findMany({
+    where: { isActive: true },
+    select: {
+      id: true,
+      name: true,
+      nameAr: true,
+      city: true,
+      centerLat: true,
+      centerLng: true,
+      radiusKm: true,
+      currency: true,
+    },
+  });
   res.json({ items });
 });
 
@@ -35,7 +55,8 @@ catalogRouter.get('/config', async (_req, res) => {
   res.json({
     geoProvider: geo.providerName,
     paymentProvider: gateway.name,
-    stripePublishableKey: env.PAYMENT_PROVIDER === 'stripe' ? process.env.STRIPE_PUBLISHABLE_KEY ?? null : null,
+    stripePublishableKey:
+      env.PAYMENT_PROVIDER === 'stripe' ? (process.env.STRIPE_PUBLISHABLE_KEY ?? null) : null,
     supportPhone: s.supportPhone,
     supportEmail: s.supportEmail,
     maintenanceMode: s.maintenanceMode,

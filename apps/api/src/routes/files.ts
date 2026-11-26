@@ -21,7 +21,10 @@ filesRouter.get('/documents/:id', async (req, res, next) => {
 
   async function serve() {
     try {
-      const doc = await prisma.driverDocument.findUnique({ where: { id: String(req.params.id) }, include: { driver: true } });
+      const doc = await prisma.driverDocument.findUnique({
+        where: { id: String(req.params.id) },
+        include: { driver: true },
+      });
       if (!doc || doc.deletedAt) throw notFound('Document');
       const u = req.user!;
       const isOwner = doc.driver.userId === u.id;
@@ -29,7 +32,10 @@ filesRouter.get('/documents/:id', async (req, res, next) => {
       // Profile photos are visible to passengers on a ride with that driver.
       const isRiderOfDriver =
         doc.type === 'PROFILE_PHOTO' &&
-        !!(await prisma.ride.findFirst({ where: { passengerId: u.id, driverId: doc.driver.userId }, select: { id: true } }));
+        !!(await prisma.ride.findFirst({
+          where: { passengerId: u.id, driverId: doc.driver.userId },
+          select: { id: true },
+        }));
       if (!isOwner && !isAdmin && !isRiderOfDriver) throw forbidden();
       const buf = await readStoredFile(doc.storageKey);
       res.setHeader('Content-Type', doc.mimeType);

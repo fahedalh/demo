@@ -6,11 +6,15 @@ const KEY = () => env.GOOGLE_MAPS_API_KEY;
 
 /** Decodes Google's encoded polyline format into [lat, lng] pairs. */
 function decodePolyline(str: string): [number, number][] {
-  let index = 0, lat = 0, lng = 0;
+  let index = 0,
+    lat = 0,
+    lng = 0;
   const out: [number, number][] = [];
   while (index < str.length) {
     for (const which of [0, 1]) {
-      let result = 0, shift = 0, b: number;
+      let result = 0,
+        shift = 0,
+        b: number;
       do {
         b = str.charCodeAt(index++) - 63;
         result |= (b & 0x1f) << shift;
@@ -40,7 +44,13 @@ export const googleProvider: GeoProvider = {
         textQuery: query,
         languageCode: locale,
         maxResultCount: 8,
-        ...(near ? { locationBias: { circle: { center: { latitude: near.lat, longitude: near.lng }, radius: 30000 } } } : {}),
+        ...(near
+          ? {
+              locationBias: {
+                circle: { center: { latitude: near.lat, longitude: near.lng }, radius: 30000 },
+              },
+            }
+          : {}),
       }),
     });
     if (!res.ok) throw new Error(`Google HTTP ${res.status}`);
@@ -61,7 +71,13 @@ export const googleProvider: GeoProvider = {
     const data: any = await res.json();
     const r = data.results?.[0];
     if (!r) throw new Error('no reverse result');
-    return { id: r.place_id, name: r.formatted_address.split(',')[0], address: r.formatted_address, lat: point.lat, lng: point.lng };
+    return {
+      id: r.place_id,
+      name: r.formatted_address.split(',')[0],
+      address: r.formatted_address,
+      lat: point.lat,
+      lng: point.lng,
+    };
   },
   async route(from, to): Promise<Route> {
     const res = await fetch('https://routes.googleapis.com/directions/v2:computeRoutes', {

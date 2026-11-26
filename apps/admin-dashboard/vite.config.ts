@@ -25,10 +25,10 @@ export default defineConfig(({ mode }) => {
       sourcemap: true,
       rollupOptions: {
         output: {
-          manualChunks: {
-            react: ['react', 'react-dom', 'react-router'],
-            map: ['leaflet'],
-            vendor: ['@tanstack/react-query', 'framer-motion', 'socket.io-client', 'i18next', 'react-i18next', 'zod'],
+          // Leaflet is dependency-free, so it can live in its own long-cached chunk without
+          // creating circular chunk imports (splitting React-dependent libs would).
+          manualChunks(id: string) {
+            return id.includes('node_modules') && /[\\/]leaflet[\\/]/.test(id) ? 'map' : undefined;
           },
         },
       },

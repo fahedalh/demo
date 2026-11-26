@@ -17,7 +17,16 @@ export interface DriverProfileResp {
     lastLocation: { lat: number; lng: number } | null;
   };
   vehicles: VehicleDTO[];
-  documents: { id: string; type: string; vehicleId: string | null; originalName: string; mimeType: string; status: 'PENDING' | 'APPROVED' | 'REJECTED'; reviewNote: string | null; createdAt: string }[];
+  documents: {
+    id: string;
+    type: string;
+    vehicleId: string | null;
+    originalName: string;
+    mimeType: string;
+    status: 'PENDING' | 'APPROVED' | 'REJECTED';
+    reviewNote: string | null;
+    createdAt: string;
+  }[];
   checklist: { personalInfo: boolean; vehicle: boolean; documents: { type: string; uploaded: boolean }[] };
 }
 

@@ -56,13 +56,20 @@ export const sandboxGateway: PaymentGateway = {
     }
     // The PAN is discarded here; only an opaque reference + display data are kept.
     const last4 = cardNumber.slice(-4);
-    return { providerRef: `sbx_pm_${last4}_${randomUUID().slice(0, 8)}`, brand: brandOf(cardNumber), last4, expMonth, expYear };
+    return {
+      providerRef: `sbx_pm_${last4}_${randomUUID().slice(0, 8)}`,
+      brand: brandOf(cardNumber),
+      last4,
+      expMonth,
+      expYear,
+    };
   },
 
   async charge(req) {
     const last4 = /^sbx_pm_(\d{4})_/.exec(req.paymentMethodRef)?.[1];
     const ref = `sbx_pi_${randomUUID().replace(/-/g, '').slice(0, 20)}`;
-    if (last4 === '0002') return { status: 'FAILED', providerRef: ref, failureReason: 'Your card was declined' };
+    if (last4 === '0002')
+      return { status: 'FAILED', providerRef: ref, failureReason: 'Your card was declined' };
     if (last4 === '9995') return { status: 'FAILED', providerRef: ref, failureReason: 'Insufficient funds' };
     return { status: 'SUCCEEDED', providerRef: ref };
   },
@@ -74,11 +81,20 @@ export const sandboxGateway: PaymentGateway = {
   parseWebhook(rawBody, signature) {
     const m = /t=(\d+),v1=([a-f0-9]+)/.exec(signature ?? '');
     if (!m) throw badRequest('Missing webhook signature');
-    const expected = createHmac('sha256', env.SANDBOX_WEBHOOK_SECRET).update(`${m[1]}.${rawBody.toString('utf8')}`).digest();
+    const expected = createHmac('sha256', env.SANDBOX_WEBHOOK_SECRET)
+      .update(`${m[1]}.${rawBody.toString('utf8')}`)
+      .digest();
     const given = Buffer.from(m[2], 'hex');
-    if (given.length !== expected.length || !timingSafeEqual(given, expected)) throw badRequest('Invalid webhook signature');
-    if (Math.abs(Date.now() / 1000 - Number(m[1])) > 300) throw badRequest('Webhook timestamp outside tolerance');
+    if (given.length !== expected.length || !timingSafeEqual(given, expected))
+      throw badRequest('Invalid webhook signature');
+    if (Math.abs(Date.now() / 1000 - Number(m[1])) > 300)
+      throw badRequest('Webhook timestamp outside tolerance');
     const evt = JSON.parse(rawBody.toString('utf8'));
-    return { id: evt.id, type: evt.type ?? 'unknown', providerRef: evt.providerRef ?? null, raw: evt } as WebhookEvent;
+    return {
+      id: evt.id,
+      type: evt.type ?? 'unknown',
+      providerRef: evt.providerRef ?? null,
+      raw: evt,
+    } as WebhookEvent;
   },
 };

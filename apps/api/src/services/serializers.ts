@@ -123,7 +123,9 @@ export function toRideDTO(r: RideFull, viewerId?: string, viewerRole?: string): 
             completedRides: dp.completedRides,
             vehicle: r.vehicle ? toVehicleDTO(r.vehicle) : null,
             location:
-              dp.lastLat != null && dp.lastLng != null ? { lat: dp.lastLat, lng: dp.lastLng, heading: dp.lastHeading } : null,
+              dp.lastLat != null && dp.lastLng != null
+                ? { lat: dp.lastLat, lng: dp.lastLng, heading: dp.lastHeading }
+                : null,
           }
         : null,
     passenger:

@@ -11,7 +11,13 @@ export async function postWalletTx(
   userId: string,
   amount: number,
   type: WalletTxType,
-  opts: { referenceType?: string; referenceId?: string; description?: string; allowNegative?: boolean; currency?: string } = {},
+  opts: {
+    referenceType?: string;
+    referenceId?: string;
+    description?: string;
+    allowNegative?: boolean;
+    currency?: string;
+  } = {},
 ) {
   const wallet = await tx.wallet.upsert({
     where: { userId },
@@ -21,7 +27,10 @@ export async function postWalletTx(
   if (amount < 0 && !opts.allowNegative && wallet.balance + amount < 0) {
     throw unprocessable('Insufficient wallet balance', 'INSUFFICIENT_FUNDS');
   }
-  const updated = await tx.wallet.update({ where: { id: wallet.id }, data: { balance: { increment: amount } } });
+  const updated = await tx.wallet.update({
+    where: { id: wallet.id },
+    data: { balance: { increment: amount } },
+  });
   await tx.walletTransaction.create({
     data: {
       walletId: wallet.id,

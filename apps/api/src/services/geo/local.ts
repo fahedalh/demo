@@ -11,7 +11,13 @@ const norm = (s: string) => s.toLowerCase().normalize('NFKD').replace(/[ً-ٟ]/g
 
 function toSuggestion(p: (typeof DUBAI_PLACES)[number], locale: string): PlaceSuggestion {
   const ar = locale === 'ar';
-  return { id: p.id, name: ar ? p.nameAr : p.name, address: ar ? p.addressAr : p.address, lat: p.lat, lng: p.lng };
+  return {
+    id: p.id,
+    name: ar ? p.nameAr : p.name,
+    address: ar ? p.addressAr : p.address,
+    lat: p.lat,
+    lng: p.lng,
+  };
 }
 
 function buildPath(from: LatLng, to: LatLng): [number, number][] {
@@ -25,8 +31,13 @@ function buildPath(from: LatLng, to: LatLng): [number, number][] {
   const out: [number, number][] = [];
   for (let i = 0; i <= steps; i++) {
     const t = i / steps;
-    const a = (1 - t) * (1 - t), b = 2 * (1 - t) * t, c = t * t;
-    out.push([+(a * from.lat + b * ctrl.lat + c * to.lat).toFixed(6), +(a * from.lng + b * ctrl.lng + c * to.lng).toFixed(6)]);
+    const a = (1 - t) * (1 - t),
+      b = 2 * (1 - t) * t,
+      c = t * t;
+    out.push([
+      +(a * from.lat + b * ctrl.lat + c * to.lat).toFixed(6),
+      +(a * from.lng + b * ctrl.lng + c * to.lng).toFixed(6),
+    ]);
   }
   return out;
 }

@@ -1,0 +1,89 @@
+# Masar — full stack in containers.
+#   cp .env.example .env   (then set real JWT secrets: openssl rand -hex 48)
+#   docker compose up -d --build
+#   docker compose run --rm seed          # optional demo data
+# Apps: passenger http://localhost:8080 · driver http://localhost:8081 · admin http://localhost:8082
+name: masar
+
+x-api-env: &api-env
+  NODE_ENV: production
+  API_PORT: 4000
+  DATABASE_URL: postgresql://${POSTGRES_USER:-masar}:${POSTGRES_PASSWORD:-masar}@postgres:5432/${POSTGRES_DB:-masar}?schema=public
+  REDIS_URL: redis://redis:6379
+  CORS_ORIGINS: http://localhost:8080,http://localhost:8081,http://localhost:8082
+  JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?Set JWT_ACCESS_SECRET in .env}
+  JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?Set JWT_REFRESH_SECRET in .env}
+  GEO_PROVIDER: ${GEO_PROVIDER:-local}
+  MAPBOX_TOKEN: ${MAPBOX_TOKEN:-}
+  GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY:-}
+  PAYMENT_PROVIDER: ${PAYMENT_PROVIDER:-sandbox}
+  STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+  STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+  SANDBOX_WEBHOOK_SECRET: ${SANDBOX_WEBHOOK_SECRET:-change-me-sandbox-webhook-secret}
+  SOCKET_REDIS_ADAPTER: "true"
+  STORAGE_DIR: /app/apps/api/storage
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-masar}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-masar}
+      POSTGRES_DB: ${POSTGRES_DB:-masar}
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-masar}"]
+      interval: 5s
+      retries: 10
+    ports: ["127.0.0.1:5432:5432"]
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes: [redisdata:/data]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 10
+
+  api:
+    build: { context: ., dockerfile: infrastructure/docker/api.Dockerfile }
+    restart: unless-stopped
+    environment: *api-env
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    volumes: [documents:/app/apps/api/storage]
+    ports: ["127.0.0.1:4000:4000"]
+
+  web:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/web.Dockerfile
+      args:
+        VITE_MAP_TILE_URL: ${VITE_MAP_TILE_URL:-}
+        VITE_DEFAULT_CENTER: ${VITE_DEFAULT_CENTER:-25.2048,55.2708}
+    restart: unless-stopped
+    depends_on:
+      api: { condition: service_healthy }
+    ports: ["8080:8080", "8081:8081", "8082:8082"]
+
+  # One-off: docker compose run --rm seed   (wipes and reloads demo data)
+  seed:
+    profiles: ["tools"]
+    build: { context: ., dockerfile: infrastructure/docker/api.Dockerfile, target: build }
+    environment:
+      <<: *api-env
+      NODE_ENV: development
+      STORAGE_DIR: ./storage
+    volumes: [documents:/app/apps/api/storage]
+    depends_on:
+      postgres: { condition: service_healthy }
+    command: ["sh", "-c", "pnpm exec prisma migrate deploy && pnpm exec tsx prisma/seed.ts"]
+
+volumes:
+  pgdata:
+  redisdata:
+  documents:

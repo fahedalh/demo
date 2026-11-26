@@ -37,7 +37,10 @@ export const driverLocations = {
   async update(driverId: string, lat: number, lng: number, heading?: number | null) {
     const pipe = redis.multi();
     pipe.geoadd(GEO(), lng, lat, driverId);
-    pipe.hset(META(driverId), { lastSeen: String(Date.now()), heading: heading == null ? '' : String(heading) });
+    pipe.hset(META(driverId), {
+      lastSeen: String(Date.now()),
+      heading: heading == null ? '' : String(heading),
+    });
     await pipe.exec();
   },
 
@@ -55,12 +58,27 @@ export const driverLocations = {
   },
 
   /** Online, idle, fresh drivers of a category near a point, nearest first. */
-  async findNearby(lat: number, lng: number, radiusKm: number, category: string | null, limit = 20): Promise<NearbyDriver[]> {
-    const raw = (await redis.geosearch(GEO(), 'FROMLONLAT', lng, lat, 'BYRADIUS', radiusKm, 'km', 'ASC', 'COUNT', limit * 2, 'WITHDIST', 'WITHCOORD')) as [
-      string,
-      string,
-      [string, string],
-    ][];
+  async findNearby(
+    lat: number,
+    lng: number,
+    radiusKm: number,
+    category: string | null,
+    limit = 20,
+  ): Promise<NearbyDriver[]> {
+    const raw = (await redis.geosearch(
+      GEO(),
+      'FROMLONLAT',
+      lng,
+      lat,
+      'BYRADIUS',
+      radiusKm,
+      'km',
+      'ASC',
+      'COUNT',
+      limit * 2,
+      'WITHDIST',
+      'WITHCOORD',
+    )) as [string, string, [string, string]][];
     if (!raw.length) return [];
     const pipe = redis.multi();
     raw.forEach(([id]) => {
@@ -76,7 +94,13 @@ export const driverLocations = {
       if (meta.busy === '1' || hasOffer) return;
       if (Date.now() - Number(meta.lastSeen ?? 0) > STALE_MS) return;
       if (category && meta.category !== category) return;
-      out.push({ driverId: id, distanceM: Math.round(Number(dist) * 1000), lat: Number(latS), lng: Number(lngS), category: meta.category });
+      out.push({
+        driverId: id,
+        distanceM: Math.round(Number(dist) * 1000),
+        lat: Number(latS),
+        lng: Number(lngS),
+        category: meta.category,
+      });
     });
     return out.slice(0, limit);
   },
@@ -89,7 +113,9 @@ export const driverLocations = {
     await redis.del(OFFER(driverId));
   },
 
-  async allOnline(): Promise<{ driverId: string; lat: number; lng: number; busy: boolean; category: string }[]> {
+  async allOnline(): Promise<
+    { driverId: string; lat: number; lng: number; busy: boolean; category: string }[]
+  > {
     const members = await redis.zrange(GEO(), 0, -1);
     if (!members.length) return [];
     const pos = await redis.geopos(GEO(), ...members);
@@ -101,7 +127,13 @@ export const driverLocations = {
         const p = pos[i];
         const meta = (metas[i]?.[1] ?? {}) as Record<string, string>;
         if (!p || !meta.category) return null;
-        return { driverId: id, lng: Number(p[0]), lat: Number(p[1]), busy: meta.busy === '1', category: meta.category };
+        return {
+          driverId: id,
+          lng: Number(p[0]),
+          lat: Number(p[1]),
+          busy: meta.busy === '1',
+          category: meta.category,
+        };
       })
       .filter((x): x is NonNullable<typeof x> => !!x);
   },

@@ -35,7 +35,8 @@ export async function authenticate(token: string): Promise<AuthUser> {
     where: { id: claims.sub },
     select: { id: true, role: true, adminRole: true, status: true, tokenVersion: true, deletedAt: true },
   });
-  if (!user || user.deletedAt || user.tokenVersion !== claims.tv) throw unauthorized('Session is no longer valid');
+  if (!user || user.deletedAt || user.tokenVersion !== claims.tv)
+    throw unauthorized('Session is no longer valid');
   if (user.status === 'SUSPENDED') throw forbidden('This account is suspended. Contact support.');
   return { id: user.id, role: user.role, adminRole: user.adminRole };
 }
@@ -63,15 +64,7 @@ export const requireRole =
  * Admin RBAC. SUPER_ADMIN can do everything; other admin roles get the listed areas.
  */
 export type AdminPermission =
-  | 'users'
-  | 'drivers'
-  | 'rides'
-  | 'finance'
-  | 'pricing'
-  | 'marketing'
-  | 'support'
-  | 'settings'
-  | 'logs';
+  'users' | 'drivers' | 'rides' | 'finance' | 'pricing' | 'marketing' | 'support' | 'settings' | 'logs';
 
 const ADMIN_PERMISSIONS: Record<AdminRole, AdminPermission[] | '*'> = {
   SUPER_ADMIN: '*',
@@ -87,14 +80,24 @@ export function adminCan(role: AdminRole | null, perm: AdminPermission): boolean
 }
 
 export const requireAdmin =
-  (perm?: AdminPermission) =>
-  (req: Request, _res: Response, next: NextFunction) => {
+  (perm?: AdminPermission) => (req: Request, _res: Response, next: NextFunction) => {
     if (!req.user || req.user.role !== 'ADMIN') return next(forbidden());
-    if (perm && !adminCan(req.user.adminRole, perm)) return next(forbidden(`Your admin role cannot manage ${perm}`));
+    if (perm && !adminCan(req.user.adminRole, perm))
+      return next(forbidden(`Your admin role cannot manage ${perm}`));
     next();
   };
 
 export function adminPermissions(role: AdminRole | null): AdminPermission[] {
-  const all: AdminPermission[] = ['users', 'drivers', 'rides', 'finance', 'pricing', 'marketing', 'support', 'settings', 'logs'];
+  const all: AdminPermission[] = [
+    'users',
+    'drivers',
+    'rides',
+    'finance',
+    'pricing',
+    'marketing',
+    'support',
+    'settings',
+    'logs',
+  ];
   return all.filter((p) => adminCan(role, p));
 }

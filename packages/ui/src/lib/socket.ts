@@ -14,7 +14,11 @@ export type MasarSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 let socket: MasarSocket | null = null;
 let currentToken: string | null = null;
 
-export const useSocketStatus = create<{ connected: boolean; everConnected: boolean; set: (c: boolean) => void }>((set) => ({
+export const useSocketStatus = create<{
+  connected: boolean;
+  everConnected: boolean;
+  set: (c: boolean) => void;
+}>((set) => ({
   connected: false,
   everConnected: false,
   set: (connected) => set((s) => ({ connected, everConnected: s.everConnected || connected })),
@@ -73,7 +77,10 @@ export function useSocket(): MasarSocket | null {
 }
 
 /** Subscribes to a server event for the component's lifetime. */
-export function useSocketEvent<E extends keyof ServerToClientEvents>(event: E, handler: ServerToClientEvents[E]) {
+export function useSocketEvent<E extends keyof ServerToClientEvents>(
+  event: E,
+  handler: ServerToClientEvents[E],
+) {
   const s = useSocket();
   useEffect(() => {
     if (!s) return;

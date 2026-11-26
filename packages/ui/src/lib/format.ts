@@ -11,10 +11,13 @@ export function useFormat() {
     money: (minor: number, currency = 'AED') => formatMoney(minor, currency, lng),
     distance: (m: number) => formatDistance(m, lng),
     duration: (s: number) => formatDuration(s, lng),
-    date: (d: string | Date, opts: Intl.DateTimeFormatOptions = { dateStyle: 'medium' }) => new Intl.DateTimeFormat(locale, opts).format(new Date(d)),
-    dateTime: (d: string | Date) => new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(d)),
+    date: (d: string | Date, opts: Intl.DateTimeFormatOptions = { dateStyle: 'medium' }) =>
+      new Intl.DateTimeFormat(locale, opts).format(new Date(d)),
+    dateTime: (d: string | Date) =>
+      new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(d)),
     time: (d: string | Date) => new Intl.DateTimeFormat(locale, { timeStyle: 'short' }).format(new Date(d)),
-    number: (n: number, digits = 0) => new Intl.NumberFormat(locale, { maximumFractionDigits: digits }).format(n),
+    number: (n: number, digits = 0) =>
+      new Intl.NumberFormat(locale, { maximumFractionDigits: digits }).format(n),
     relative: (d: string | Date) => {
       const diff = (new Date(d).getTime() - Date.now()) / 1000;
       const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });

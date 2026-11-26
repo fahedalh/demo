@@ -28,7 +28,14 @@ export interface AuthScreenProps {
   onAuthenticated?: (res: AuthResponse) => void;
 }
 
-export function AuthScreen({ role, suffix, allowRegister = true, demo, aside, onAuthenticated }: AuthScreenProps) {
+export function AuthScreen({
+  role,
+  suffix,
+  allowRegister = true,
+  demo,
+  aside,
+  onAuthenticated,
+}: AuthScreenProps) {
   const [mode, setMode] = React.useState<Mode>('login');
   const { t } = useTranslation();
   return (
@@ -42,15 +49,27 @@ export function AuthScreen({ role, suffix, allowRegister = true, demo, aside, on
           </div>
         </header>
         <main className="mx-auto flex w-full max-w-[420px] flex-1 flex-col justify-center py-10">
-          <motion.div key={mode} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
-            {mode === 'login' && <LoginForm demo={demo} onForgot={() => setMode('forgot')} onAuthenticated={onAuthenticated} />}
-            {mode === 'register' && <RegisterForm role={role as 'PASSENGER' | 'DRIVER'} onAuthenticated={onAuthenticated} />}
+          <motion.div
+            key={mode}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25 }}
+          >
+            {mode === 'login' && (
+              <LoginForm demo={demo} onForgot={() => setMode('forgot')} onAuthenticated={onAuthenticated} />
+            )}
+            {mode === 'register' && (
+              <RegisterForm role={role as 'PASSENGER' | 'DRIVER'} onAuthenticated={onAuthenticated} />
+            )}
             {mode === 'forgot' && <ForgotForm onDone={() => setMode('login')} />}
             <div className="mt-8 text-center text-sm text-muted">
               {mode === 'login' && allowRegister && (
                 <>
                   {t('auth.noAccount')}{' '}
-                  <button className="font-semibold text-fg underline-offset-4 hover:underline" onClick={() => setMode('register')}>
+                  <button
+                    className="font-semibold text-fg underline-offset-4 hover:underline"
+                    onClick={() => setMode('register')}
+                  >
                     {t('auth.signUp')}
                   </button>
                 </>
@@ -58,7 +77,10 @@ export function AuthScreen({ role, suffix, allowRegister = true, demo, aside, on
               {mode !== 'login' && (
                 <>
                   {t('auth.haveAccount')}{' '}
-                  <button className="font-semibold text-fg underline-offset-4 hover:underline" onClick={() => setMode('login')}>
+                  <button
+                    className="font-semibold text-fg underline-offset-4 hover:underline"
+                    onClick={() => setMode('login')}
+                  >
                     {t('auth.signIn')}
                   </button>
                 </>
@@ -78,7 +100,12 @@ function PasswordInput(props: React.InputHTMLAttributes<HTMLInputElement> & { in
   return (
     <div className="relative">
       <Input {...props} type={show ? 'text' : 'password'} className="pe-12" />
-      <button type="button" onClick={() => setShow((s) => !s)} className="absolute end-3 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-muted hover:text-fg" aria-label={show ? 'Hide password' : 'Show password'}>
+      <button
+        type="button"
+        onClick={() => setShow((s) => !s)}
+        className="absolute end-3 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-muted hover:text-fg"
+        aria-label={show ? 'Hide password' : 'Show password'}
+      >
         {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
       </button>
     </div>
@@ -98,7 +125,10 @@ function SocialButtons() {
     <div className="grid grid-cols-2 gap-3">
       <Button type="button" variant="outline" onClick={() => tryProvider('google')}>
         <svg viewBox="0 0 24 24" className="size-4" aria-hidden>
-          <path fill="#EA4335" d="M12 10.2v3.9h5.4c-.2 1.3-1.6 3.8-5.4 3.8-3.3 0-5.9-2.7-5.9-6s2.7-6 5.9-6c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.4 14.6 2.4 12 2.4 6.7 2.4 2.4 6.7 2.4 12s4.3 9.6 9.6 9.6c5.5 0 9.2-3.9 9.2-9.4 0-.6-.1-1.1-.2-1.6H12z" />
+          <path
+            fill="#EA4335"
+            d="M12 10.2v3.9h5.4c-.2 1.3-1.6 3.8-5.4 3.8-3.3 0-5.9-2.7-5.9-6s2.7-6 5.9-6c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.4 14.6 2.4 12 2.4 6.7 2.4 2.4 6.7 2.4 12s4.3 9.6 9.6 9.6c5.5 0 9.2-3.9 9.2-9.4 0-.6-.1-1.1-.2-1.6H12z"
+          />
         </svg>
         Google
       </Button>
@@ -112,11 +142,22 @@ function SocialButtons() {
   );
 }
 
-function LoginForm({ demo, onForgot, onAuthenticated }: { demo?: AuthScreenProps['demo']; onForgot: () => void; onAuthenticated?: (r: AuthResponse) => void }) {
+function LoginForm({
+  demo,
+  onForgot,
+  onAuthenticated,
+}: {
+  demo?: AuthScreenProps['demo'];
+  onForgot: () => void;
+  onAuthenticated?: (r: AuthResponse) => void;
+}) {
   const { t } = useTranslation();
   const setSession = useAuth((s) => s.setSession);
   const [error, setError] = React.useState<string | null>(null);
-  const form = useForm<z.infer<typeof loginSchema>>({ resolver: zodResolver(loginSchema), defaultValues: { identifier: '', password: '' } });
+  const form = useForm<z.infer<typeof loginSchema>>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { identifier: '', password: '' },
+  });
   const submit = form.handleSubmit(async (values) => {
     setError(null);
     try {
@@ -155,11 +196,25 @@ function LoginForm({ demo, onForgot, onAuthenticated }: { demo?: AuthScreenProps
         </div>
       )}
       <FormError message={error} />
-      <Field label={t('auth.emailOrPhone')} error={form.formState.errors.identifier?.message} htmlFor="identifier">
-        <Input id="identifier" autoComplete="username" {...form.register('identifier')} invalid={!!form.formState.errors.identifier} />
+      <Field
+        label={t('auth.emailOrPhone')}
+        error={form.formState.errors.identifier?.message}
+        htmlFor="identifier"
+      >
+        <Input
+          id="identifier"
+          autoComplete="username"
+          {...form.register('identifier')}
+          invalid={!!form.formState.errors.identifier}
+        />
       </Field>
       <Field label={t('auth.password')} error={form.formState.errors.password?.message} htmlFor="password">
-        <PasswordInput id="password" autoComplete="current-password" {...form.register('password')} invalid={!!form.formState.errors.password} />
+        <PasswordInput
+          id="password"
+          autoComplete="current-password"
+          {...form.register('password')}
+          invalid={!!form.formState.errors.password}
+        />
       </Field>
       <div className="flex justify-end">
         <button type="button" onClick={onForgot} className="text-sm font-medium text-muted hover:text-fg">
@@ -177,25 +232,37 @@ function LoginForm({ demo, onForgot, onAuthenticated }: { demo?: AuthScreenProps
   );
 }
 
-const registerForm = z
-  .object({
-    firstName: z.string().trim().min(1, 'Required'),
-    lastName: z.string().trim().min(1, 'Required'),
-    email: z.string().trim().email('Enter a valid email address'),
-    phone: phoneSchema,
-    password: passwordSchema,
-  });
+const registerForm = z.object({
+  firstName: z.string().trim().min(1, 'Required'),
+  lastName: z.string().trim().min(1, 'Required'),
+  email: z.string().trim().email('Enter a valid email address'),
+  phone: phoneSchema,
+  password: passwordSchema,
+});
 
-function RegisterForm({ role, onAuthenticated }: { role: 'PASSENGER' | 'DRIVER'; onAuthenticated?: (r: AuthResponse) => void }) {
+function RegisterForm({
+  role,
+  onAuthenticated,
+}: {
+  role: 'PASSENGER' | 'DRIVER';
+  onAuthenticated?: (r: AuthResponse) => void;
+}) {
   const { t, i18n } = useTranslation();
   const setSession = useAuth((s) => s.setSession);
   const [error, setError] = React.useState<string | null>(null);
-  const form = useForm<z.infer<typeof registerForm>>({ resolver: zodResolver(registerForm), defaultValues: { firstName: '', lastName: '', email: '', phone: '+971', password: '' } });
+  const form = useForm<z.infer<typeof registerForm>>({
+    resolver: zodResolver(registerForm),
+    defaultValues: { firstName: '', lastName: '', email: '', phone: '+971', password: '' },
+  });
   const e = form.formState.errors;
   const submit = form.handleSubmit(async (values) => {
     setError(null);
     try {
-      const res = await api.post<AuthResponse>('/auth/register', { ...values, role, locale: i18n.language === 'ar' ? 'ar' : 'en' });
+      const res = await api.post<AuthResponse>('/auth/register', {
+        ...values,
+        role,
+        locale: i18n.language === 'ar' ? 'ar' : 'en',
+      });
       setSession(res.user, res.accessToken);
       onAuthenticated?.(res);
     } catch (err) {
@@ -208,20 +275,47 @@ function RegisterForm({ role, onAuthenticated }: { role: 'PASSENGER' | 'DRIVER';
       <FormError message={error} />
       <div className="grid grid-cols-2 gap-3">
         <Field label={t('auth.firstName')} error={e.firstName?.message} htmlFor="firstName">
-          <Input id="firstName" autoComplete="given-name" {...form.register('firstName')} invalid={!!e.firstName} />
+          <Input
+            id="firstName"
+            autoComplete="given-name"
+            {...form.register('firstName')}
+            invalid={!!e.firstName}
+          />
         </Field>
         <Field label={t('auth.lastName')} error={e.lastName?.message} htmlFor="lastName">
-          <Input id="lastName" autoComplete="family-name" {...form.register('lastName')} invalid={!!e.lastName} />
+          <Input
+            id="lastName"
+            autoComplete="family-name"
+            {...form.register('lastName')}
+            invalid={!!e.lastName}
+          />
         </Field>
       </div>
       <Field label={t('auth.email')} error={e.email?.message} htmlFor="email">
         <Input id="email" type="email" autoComplete="email" {...form.register('email')} invalid={!!e.email} />
       </Field>
       <Field label={t('auth.phone')} error={e.phone?.message} htmlFor="phone">
-        <Input id="phone" type="tel" dir="ltr" autoComplete="tel" {...form.register('phone')} invalid={!!e.phone} />
+        <Input
+          id="phone"
+          type="tel"
+          dir="ltr"
+          autoComplete="tel"
+          {...form.register('phone')}
+          invalid={!!e.phone}
+        />
       </Field>
-      <Field label={t('auth.password')} error={e.password?.message} hint={t('auth.passwordHint')} htmlFor="new-password">
-        <PasswordInput id="new-password" autoComplete="new-password" {...form.register('password')} invalid={!!e.password} />
+      <Field
+        label={t('auth.password')}
+        error={e.password?.message}
+        hint={t('auth.passwordHint')}
+        htmlFor="new-password"
+      >
+        <PasswordInput
+          id="new-password"
+          autoComplete="new-password"
+          {...form.register('password')}
+          invalid={!!e.password}
+        />
       </Field>
       <Button type="submit" size="lg" block loading={form.formState.isSubmitting}>
         {t('auth.signUp')}
@@ -231,7 +325,10 @@ function RegisterForm({ role, onAuthenticated }: { role: 'PASSENGER' | 'DRIVER';
 }
 
 const forgotSchema = z.object({ identifier: z.string().trim().min(3, 'Required') });
-const resetSchema = z.object({ code: z.string().regex(/^\d{6}$/, 'Enter the 6-digit code'), password: passwordSchema });
+const resetSchema = z.object({
+  code: z.string().regex(/^\d{6}$/, 'Enter the 6-digit code'),
+  password: passwordSchema,
+});
 
 function ForgotForm({ onDone }: { onDone: () => void }) {
   const { t } = useTranslation();
@@ -291,9 +388,19 @@ function ForgotForm({ onDone }: { onDone: () => void }) {
       </div>
       <FormError message={error} />
       <Field label={t('auth.code')} error={f2.formState.errors.code?.message}>
-        <Input inputMode="numeric" maxLength={6} dir="ltr" className="tracking-[0.5em] text-center text-lg font-semibold" {...f2.register('code')} />
+        <Input
+          inputMode="numeric"
+          maxLength={6}
+          dir="ltr"
+          className="tracking-[0.5em] text-center text-lg font-semibold"
+          {...f2.register('code')}
+        />
       </Field>
-      <Field label={t('auth.newPassword')} error={f2.formState.errors.password?.message} hint={t('auth.passwordHint')}>
+      <Field
+        label={t('auth.newPassword')}
+        error={f2.formState.errors.password?.message}
+        hint={t('auth.passwordHint')}
+      >
         <PasswordInput autoComplete="new-password" {...f2.register('password')} />
       </Field>
       <Button type="submit" size="lg" block loading={f2.formState.isSubmitting}>

@@ -16,17 +16,30 @@ const autoSchema = z.object({
 
 geoRouter.get('/autocomplete', validate(autoSchema, 'query'), async (req, res) => {
   const { q: query, lat, lng, locale } = q<z.infer<typeof autoSchema>>(req);
-  res.json({ items: await geo.autocomplete(query, { near: lat != null && lng != null ? { lat, lng } : undefined, locale }), provider: geo.providerName });
+  res.json({
+    items: await geo.autocomplete(query, {
+      near: lat != null && lng != null ? { lat, lng } : undefined,
+      locale,
+    }),
+    provider: geo.providerName,
+  });
 });
 
-const revSchema = z.object({ lat: z.coerce.number().min(-90).max(90), lng: z.coerce.number().min(-180).max(180), locale: z.enum(['en', 'ar']).default('en') });
+const revSchema = z.object({
+  lat: z.coerce.number().min(-90).max(90),
+  lng: z.coerce.number().min(-180).max(180),
+  locale: z.enum(['en', 'ar']).default('en'),
+});
 geoRouter.get('/reverse', validate(revSchema, 'query'), async (req, res) => {
   const { lat, lng, locale } = q<z.infer<typeof revSchema>>(req);
   res.json(await geo.reverse({ lat, lng }, locale));
 });
 
 const routeSchema = z.object({
-  fromLat: z.coerce.number(), fromLng: z.coerce.number(), toLat: z.coerce.number(), toLng: z.coerce.number(),
+  fromLat: z.coerce.number(),
+  fromLng: z.coerce.number(),
+  toLat: z.coerce.number(),
+  toLng: z.coerce.number(),
 });
 geoRouter.get('/route', validate(routeSchema, 'query'), async (req, res) => {
   const p = q<z.infer<typeof routeSchema>>(req);

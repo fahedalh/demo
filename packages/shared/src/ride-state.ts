@@ -66,9 +66,7 @@ export const RIDE_TRANSITIONS: Record<RideStatus, TransitionRule[]> = {
     { to: 'IN_PROGRESS', by: ['DRIVER'] },
     { to: 'CANCELLED', by: ['PASSENGER', 'DRIVER', 'ADMIN'] },
   ],
-  IN_PROGRESS: [
-    { to: 'COMPLETED', by: ['DRIVER', 'ADMIN'] },
-  ],
+  IN_PROGRESS: [{ to: 'COMPLETED', by: ['DRIVER', 'ADMIN'] }],
   COMPLETED: [
     { to: 'PAYMENT_PENDING', by: ['SYSTEM'] },
     { to: 'PAYMENT_COMPLETED', by: ['SYSTEM', 'ADMIN'] },
@@ -110,7 +108,12 @@ export const ACTIVE_RIDE_STATUSES: RideStatus[] = [
 ];
 
 /** Ride has a driver assigned and is not finished. */
-export const DRIVER_ENGAGED_STATUSES: RideStatus[] = ['ACCEPTED', 'DRIVER_ARRIVING', 'ARRIVED', 'IN_PROGRESS'];
+export const DRIVER_ENGAGED_STATUSES: RideStatus[] = [
+  'ACCEPTED',
+  'DRIVER_ARRIVING',
+  'ARRIVED',
+  'IN_PROGRESS',
+];
 
 /** The trip itself happened (regardless of payment state). */
 export const FINISHED_TRIP_STATUSES: RideStatus[] = ['COMPLETED', 'PAYMENT_PENDING', 'PAYMENT_COMPLETED'];

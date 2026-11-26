@@ -1,0 +1,11 @@
+**/node_modules
+**/dist
+.git
+.env
+.env.*
+!.env.example
+**/storage
+**/storage-test
+test-results
+playwright-report
+*.log

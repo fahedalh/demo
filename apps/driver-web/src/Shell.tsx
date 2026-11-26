@@ -4,7 +4,17 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { CarFront, ClipboardList, LogOut, User, Wallet } from 'lucide-react';
 import type { NotificationDTO } from '@masar/shared';
-import { cn, LanguageToggle, Logo, logout, ThemeToggle, toast, useSocket, useSocketEvent, InstallPrompt } from '@masar/ui';
+import {
+  cn,
+  LanguageToggle,
+  Logo,
+  logout,
+  ThemeToggle,
+  toast,
+  useSocket,
+  useSocketEvent,
+  InstallPrompt,
+} from '@masar/ui';
 import { startEngine, stopEngine } from './lib/location';
 
 const tabs = [
@@ -39,15 +49,33 @@ export function Shell() {
         <Logo suffix="Driver" className="px-2 py-2" />
         <nav className="mt-6 flex flex-col gap-1">
           {tabs.map((tab) => (
-            <NavLink key={tab.to} to={tab.to} end className={({ isActive }) => cn('flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition', isActive ? 'bg-primary text-primary-fg' : 'text-muted hover:bg-surface-2 hover:text-fg')}>
+            <NavLink
+              key={tab.to}
+              to={tab.to}
+              end
+              className={({ isActive }) =>
+                cn(
+                  'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition',
+                  isActive ? 'bg-primary text-primary-fg' : 'text-muted hover:bg-surface-2 hover:text-fg',
+                )
+              }
+            >
               <tab.icon className="size-5" /> {t(`nav.${tab.key}`)}
             </NavLink>
           ))}
         </nav>
         <div className="mt-auto space-y-2">
           <InstallPrompt className="w-full" />
-          <div className="flex items-center gap-1"><LanguageToggle /><ThemeToggle /></div>
-          <button onClick={() => void logout()} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-muted hover:bg-surface-2 hover:text-fg"><LogOut className="size-5" /> {t('actions.signOut')}</button>
+          <div className="flex items-center gap-1">
+            <LanguageToggle />
+            <ThemeToggle />
+          </div>
+          <button
+            onClick={() => void logout()}
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-muted hover:bg-surface-2 hover:text-fg"
+          >
+            <LogOut className="size-5" /> {t('actions.signOut')}
+          </button>
         </div>
       </aside>
       <main className={cn('min-w-0 flex-1', !isDrive && 'pb-24 md:pb-8')}>
@@ -56,7 +84,17 @@ export function Shell() {
       <nav className="fixed inset-x-0 bottom-0 z-[700] border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden">
         <div className="grid grid-cols-4">
           {tabs.map((tab) => (
-            <NavLink key={tab.to} to={tab.to} end className={({ isActive }) => cn('flex flex-col items-center gap-1 py-2.5 text-[11px] font-semibold', isActive ? 'text-fg' : 'text-muted')}>
+            <NavLink
+              key={tab.to}
+              to={tab.to}
+              end
+              className={({ isActive }) =>
+                cn(
+                  'flex flex-col items-center gap-1 py-2.5 text-[11px] font-semibold',
+                  isActive ? 'text-fg' : 'text-muted',
+                )
+              }
+            >
               <tab.icon className="size-5" /> {t(`nav.${tab.key}`)}
             </NavLink>
           ))}

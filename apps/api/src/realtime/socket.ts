@@ -55,19 +55,29 @@ export function createSocketServer(http: HttpServer): IO {
 
     // Rejoin the room of any live ride so tracking resumes immediately after a reconnect.
     const live = await prisma.ride.findFirst({
-      where: { OR: [{ passengerId: user.id }, { driverId: user.id }], status: { in: [...DRIVER_ENGAGED_STATUSES, 'SEARCHING'] } },
+      where: {
+        OR: [{ passengerId: user.id }, { driverId: user.id }],
+        status: { in: [...DRIVER_ENGAGED_STATUSES, 'SEARCHING'] },
+      },
       select: { id: true },
     });
     if (live) socket.join(`ride:${live.id}`);
     if (user.role === 'DRIVER') {
-      const dp = await prisma.driverProfile.findUnique({ where: { userId: user.id }, select: { isOnline: true } });
+      const dp = await prisma.driverProfile.findUnique({
+        where: { userId: user.id },
+        select: { isOnline: true },
+      });
       if (dp?.isOnline) socket.join('drivers:online');
       socket.emit('driver:status', { isOnline: !!dp?.isOnline });
     }
 
     socket.on('ride:subscribe', async ({ rideId }, ack) => {
-      const ride = await prisma.ride.findUnique({ where: { id: String(rideId) }, select: { passengerId: true, driverId: true } });
-      const allowed = ride && (ride.passengerId === user.id || ride.driverId === user.id || user.role === 'ADMIN');
+      const ride = await prisma.ride.findUnique({
+        where: { id: String(rideId) },
+        select: { passengerId: true, driverId: true },
+      });
+      const allowed =
+        ride && (ride.passengerId === user.id || ride.driverId === user.id || user.role === 'ADMIN');
       if (!allowed) return ack?.({ ok: false, error: 'FORBIDDEN' });
       socket.join(`ride:${rideId}`);
       ack?.({ ok: true });
@@ -78,7 +88,8 @@ export function createSocketServer(http: HttpServer): IO {
     });
 
     socket.on('ride:typing', ({ rideId }) => {
-      if (socket.rooms.has(`ride:${rideId}`)) socket.to(`ride:${rideId}`).emit('ride:typing', { rideId, userId: user.id });
+      if (socket.rooms.has(`ride:${rideId}`))
+        socket.to(`ride:${rideId}`).emit('ride:typing', { rideId, userId: user.id });
     });
 
     socket.on('driver:location', async (payload, ack) => {
@@ -100,7 +111,9 @@ export function createSocketServer(http: HttpServer): IO {
 
     socket.on('passenger:location', async ({ rideId, lat, lng }) => {
       if (!socket.rooms.has(`ride:${rideId}`) || typeof lat !== 'number' || typeof lng !== 'number') return;
-      socket.to(`ride:${rideId}`).emit('ride:driver_location', { driverId: user.id, rideId, lat, lng, at: new Date().toISOString() });
+      socket
+        .to(`ride:${rideId}`)
+        .emit('ride:driver_location', { driverId: user.id, rideId, lat, lng, at: new Date().toISOString() });
     });
   });
 
@@ -123,7 +136,12 @@ async function handleDriverLocation(
     data.lastDbWriteAt = now;
     await prisma.driverProfile.update({
       where: { userId: driverId },
-      data: { lastLat: loc.lat, lastLng: loc.lng, lastHeading: loc.heading ?? null, lastLocationAt: new Date() },
+      data: {
+        lastLat: loc.lat,
+        lastLng: loc.lng,
+        lastHeading: loc.heading ?? null,
+        lastLocationAt: new Date(),
+      },
     });
   }
 
@@ -133,9 +151,12 @@ async function handleDriverLocation(
   });
   const at = new Date().toISOString();
   if (ride) {
-    await prisma.rideLocation.create({ data: { rideId: ride.id, lat: loc.lat, lng: loc.lng, heading: loc.heading, speed: loc.speed } });
+    await prisma.rideLocation.create({
+      data: { rideId: ride.id, lat: loc.lat, lng: loc.lng, heading: loc.heading, speed: loc.speed },
+    });
     io.to(`ride:${ride.id}`).emit('ride:driver_location', { driverId, rideId: ride.id, ...loc, at });
     if (ride.status === 'ACCEPTED') await markDriverArriving(ride.id, driverId).catch(() => undefined);
   }
-  if (online) io.to('admins').emit('admin:driver_location', { driverId, ...loc, at, isOnline: true, busy: !!ride });
+  if (online)
+    io.to('admins').emit('admin:driver_location', { driverId, ...loc, at, isOnline: true, busy: !!ride });
 }

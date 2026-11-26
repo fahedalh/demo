@@ -55,7 +55,11 @@ describe('pricing', () => {
 
   it('applies the minimum fare and surge', () => {
     expect(calculateFare(rule, { distanceMeters: 500, durationSeconds: 60 }).total).toBe(1200);
-    const surged = calculateFare(rule, { distanceMeters: 10_000, durationSeconds: 1200, surgeMultiplier: 1.5 });
+    const surged = calculateFare(rule, {
+      distanceMeters: 10_000,
+      durationSeconds: 1200,
+      surgeMultiplier: 1.5,
+    });
     expect(surged.surgeAmount).toBe(1750);
     expect(surged.total).toBe(5350);
   });
@@ -105,9 +109,16 @@ describe('geo', () => {
 
 describe('validation', () => {
   it('requires email or phone on registration', () => {
-    expect(registerSchema.safeParse({ firstName: 'a', lastName: 'b', password: 'abcdefg1' }).success).toBe(false);
+    expect(registerSchema.safeParse({ firstName: 'a', lastName: 'b', password: 'abcdefg1' }).success).toBe(
+      false,
+    );
     expect(
-      registerSchema.safeParse({ firstName: 'a', lastName: 'b', password: 'abcdefg1', phone: '+971501234567' }).success,
+      registerSchema.safeParse({
+        firstName: 'a',
+        lastName: 'b',
+        password: 'abcdefg1',
+        phone: '+971501234567',
+      }).success,
     ).toBe(true);
   });
   it('rejects scheduling in the past', () => {
@@ -117,7 +128,9 @@ describe('validation', () => {
       categoryCode: 'ECONOMY',
       paymentType: 'CASH',
     };
-    expect(createRideSchema.safeParse({ ...base, scheduledAt: new Date(Date.now() - 1000) }).success).toBe(false);
+    expect(createRideSchema.safeParse({ ...base, scheduledAt: new Date(Date.now() - 1000) }).success).toBe(
+      false,
+    );
     expect(createRideSchema.safeParse(base).success).toBe(true);
   });
 });

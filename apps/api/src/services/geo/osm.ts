@@ -23,7 +23,9 @@ export const osmProvider: GeoProvider = {
   async autocomplete(query, { near, locale }) {
     const bias = near ? `&lat=${near.lat}&lon=${near.lng}` : '';
     const lang = locale === 'ar' ? 'default' : 'en';
-    const data = await getJson(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=8&lang=${lang}${bias}`);
+    const data = await getJson(
+      `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=8&lang=${lang}${bias}`,
+    );
     return (data.features ?? []).map(photonToSuggestion);
   },
   async reverse(point) {

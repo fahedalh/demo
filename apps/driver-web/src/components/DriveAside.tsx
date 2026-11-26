@@ -7,7 +7,12 @@ export function DriveAside() {
   return (
     <div className="relative flex h-full flex-col justify-end p-14 text-white">
       <div className="absolute inset-0 grid place-items-center" aria-hidden>
-        <motion.div className="relative size-[520px]" initial={{ rotate: -8, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} transition={{ duration: 1.2 }}>
+        <motion.div
+          className="relative size-[520px]"
+          initial={{ rotate: -8, opacity: 0 }}
+          animate={{ rotate: 0, opacity: 1 }}
+          transition={{ duration: 1.2 }}
+        >
           <div className="absolute inset-0 rounded-full border border-white/10" />
           <div className="absolute inset-16 rounded-full border border-white/10" />
           <div className="absolute inset-32 rounded-full border border-accent/40" />
@@ -22,7 +27,12 @@ export function DriveAside() {
         <p className="mt-4 text-lg text-white/70">{t('hero.subtitle')}</p>
         <ul className="mt-8 space-y-3">
           {['perk1', 'perk2', 'perk3'].map((k) => (
-            <li key={k} className="flex items-center gap-3 text-white/90"><span className="grid size-6 place-items-center rounded-full bg-accent"><Check className="size-3.5" /></span>{t(`hero.${k}`)}</li>
+            <li key={k} className="flex items-center gap-3 text-white/90">
+              <span className="grid size-6 place-items-center rounded-full bg-accent">
+                <Check className="size-3.5" />
+              </span>
+              {t(`hero.${k}`)}
+            </li>
           ))}
         </ul>
       </div>

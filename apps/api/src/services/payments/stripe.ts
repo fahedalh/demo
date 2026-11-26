@@ -13,7 +13,11 @@ export const stripeGateway: PaymentGateway = {
   async createSetupSession(customerRef, email) {
     let customer = customerRef;
     if (!customer) customer = (await stripe().customers.create({ email: email ?? undefined })).id;
-    const si = await stripe().setupIntents.create({ customer, usage: 'off_session', payment_method_types: ['card'] });
+    const si = await stripe().setupIntents.create({
+      customer,
+      usage: 'off_session',
+      payment_method_types: ['card'],
+    });
     return { clientSecret: si.client_secret!, customerRef: customer };
   },
 
@@ -48,15 +52,26 @@ export const stripeGateway: PaymentGateway = {
       if (pi.status === 'succeeded') return { status: 'SUCCEEDED', providerRef: pi.id };
       if (pi.status === 'requires_action')
         return { status: 'REQUIRES_ACTION', providerRef: pi.id, clientSecret: pi.client_secret ?? undefined };
-      return { status: 'FAILED', providerRef: pi.id, failureReason: pi.last_payment_error?.message ?? pi.status };
+      return {
+        status: 'FAILED',
+        providerRef: pi.id,
+        failureReason: pi.last_payment_error?.message ?? pi.status,
+      };
     } catch (err: any) {
-      return { status: 'FAILED', providerRef: err?.raw?.payment_intent?.id ?? null, failureReason: err?.message ?? 'Payment failed' };
+      return {
+        status: 'FAILED',
+        providerRef: err?.raw?.payment_intent?.id ?? null,
+        failureReason: err?.message ?? 'Payment failed',
+      };
     }
   },
 
   async refund(providerRef, amount) {
     const r = await stripe().refunds.create({ payment_intent: providerRef, amount });
-    return { status: r.status === 'succeeded' ? 'SUCCEEDED' : r.status === 'failed' ? 'FAILED' : 'PENDING', providerRef: r.id };
+    return {
+      status: r.status === 'succeeded' ? 'SUCCEEDED' : r.status === 'failed' ? 'FAILED' : 'PENDING',
+      providerRef: r.id,
+    };
   },
 
   parseWebhook(rawBody, signature) {

@@ -8,7 +8,8 @@ export default async function setup() {
   const env = {
     ...process.env,
     NODE_ENV: 'test',
-    DATABASE_URL: process.env.TEST_DATABASE_URL ?? 'postgresql://masar:masar@localhost:5432/masar_test?schema=public',
+    DATABASE_URL:
+      process.env.TEST_DATABASE_URL ?? 'postgresql://masar:masar@localhost:5432/masar_test?schema=public',
     STORAGE_DIR: './storage-test',
   };
   // Non-destructive: apply pending migrations; the seed itself truncates the dedicated test DB.

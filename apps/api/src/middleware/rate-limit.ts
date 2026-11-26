@@ -10,10 +10,13 @@ function make(name: string, opts: Partial<Options>) {
     skip: () => env.isTest,
     store: new RedisStore({
       prefix: rk(`rl:${name}:`),
-      sendCommand: (command: string, ...args: string[]) => redis.call(command, ...args) as Promise<RedisReply>,
+      sendCommand: (command: string, ...args: string[]) =>
+        redis.call(command, ...args) as Promise<RedisReply>,
     }),
     handler: (_req, res) =>
-      res.status(429).json({ error: { code: 'RATE_LIMITED', message: 'Too many requests, please slow down' } }),
+      res
+        .status(429)
+        .json({ error: { code: 'RATE_LIMITED', message: 'Too many requests, please slow down' } }),
     ...opts,
   });
 }

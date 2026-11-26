@@ -36,7 +36,10 @@ export function Field({
 export function FormError({ message }: { message?: string | null }) {
   if (!message) return null;
   return (
-    <div role="alert" className="rounded-xl border border-danger/30 bg-danger/8 px-4 py-3 text-sm font-medium text-danger">
+    <div
+      role="alert"
+      className="rounded-xl border border-danger/30 bg-danger/8 px-4 py-3 text-sm font-medium text-danger"
+    >
       {message}
     </div>
   );

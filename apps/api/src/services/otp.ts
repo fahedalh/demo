@@ -35,7 +35,13 @@ export async function issueOtp(target: string, purpose: OtpPurpose, userId?: str
   if (recent > 0) throw badRequest('Please wait a minute before requesting another code');
   const code = otp6();
   await prisma.otpCode.create({
-    data: { target, purpose, userId: userId ?? null, codeHash: hash(code), expiresAt: new Date(Date.now() + 10 * 60_000) },
+    data: {
+      target,
+      purpose,
+      userId: userId ?? null,
+      codeHash: hash(code),
+      expiresAt: new Date(Date.now() + 10 * 60_000),
+    },
   });
   if (!env.isProd) lastOtpForTests.set(`${purpose}:${target}`, code);
   await delivery.send(target, code, purpose);

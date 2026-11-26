@@ -11,7 +11,8 @@ type Dict = Record<string, any>;
 
 function deepMerge(a: Dict, b: Dict): Dict {
   const out: Dict = { ...a };
-  for (const [k, v] of Object.entries(b)) out[k] = v && typeof v === 'object' && !Array.isArray(v) ? deepMerge(a[k] ?? {}, v) : v;
+  for (const [k, v] of Object.entries(b))
+    out[k] = v && typeof v === 'object' && !Array.isArray(v) ? deepMerge(a[k] ?? {}, v) : v;
   return out;
 }
 
