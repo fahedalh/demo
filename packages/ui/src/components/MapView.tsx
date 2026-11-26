@@ -1,6 +1,6 @@
 /**
- * Map component on top of Leaflet (no API key needed). Tiles default to CARTO's minimal
- * basemaps (light/dark follow the theme); set VITE_MAP_TILE_URL to use Mapbox/MapTiler/etc.
+ * Map component on top of Leaflet (no API key needed). Tiles default to OpenStreetMap's standard
+ * tiles (darkened by a CSS filter in dark mode); set VITE_MAP_TILE_URL to use Mapbox/MapTiler/etc.
  * Markers are diffed by id so live driver positions update smoothly without re-creating layers.
  */
 import { useEffect, useRef } from 'react';
@@ -37,10 +37,14 @@ interface Props {
 }
 
 const ENV_TILES = import.meta.env.VITE_MAP_TILE_URL as string | undefined;
-const LIGHT = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
-const DARK = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+// Default: OpenStreetMap's standard tiles — no API key. Fine for development and demos; for
+// production traffic set VITE_MAP_TILE_URL to a commercial provider (Mapbox, MapTiler, Stadia…)
+// per the OSM tile usage policy.
+const OSM_TILES = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+const ENV_ATTRIBUTION = import.meta.env.VITE_MAP_TILE_ATTRIBUTION as string | undefined;
 const ATTRIBUTION =
-  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>';
+  ENV_ATTRIBUTION ||
+  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
 const carSvg = (busy: boolean) => `
 <svg width="34" height="34" viewBox="0 0 34 34" xmlns="http://www.w3.org/2000/svg">
@@ -151,13 +155,12 @@ export function MapView({
     const m = map.current;
     if (!m) return;
     const dark = document.documentElement.classList.contains('dark');
-    const url = ENV_TILES || (dark ? DARK : LIGHT);
     tiles.current?.remove();
-    tiles.current = L.tileLayer(url, {
+    tiles.current = L.tileLayer(ENV_TILES || OSM_TILES, {
       attribution: ATTRIBUTION,
       maxZoom: 19,
-      subdomains: 'abcd',
-      detectRetina: true,
+      // OSM has no dark style: darken the light tiles with a CSS filter in dark mode.
+      className: dark && !ENV_TILES ? 'masar-tiles-dark' : '',
     }).addTo(m);
   }, [theme]);
 

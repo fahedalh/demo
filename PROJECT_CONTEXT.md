@@ -18,7 +18,7 @@ pnpm monorepo. `apps/api` (Express 5 + Socket.IO + Prisma/Postgres + Redis) serv
 | Money as Int minor units | No floating-point drift in fares/ledgers |
 | Redis GEO for live positions | Sub-ms nearest-driver queries; Postgres keeps throttled copies + trails |
 | In-process dispatch timers + `recover()` | Simple and correct for one instance; documented path to BullMQ for many |
-| Leaflet + CARTO tiles (not Mapbox GL / Google JS) | No browser key needed; tile URL configurable; server-side geo adapters for Mapbox/Google |
+| Leaflet + OpenStreetMap tiles (not Mapbox GL / Google JS) | No browser key needed; tile URL configurable; server-side geo adapters for Mapbox/Google |
 | Sandbox payment gateway as default | Full payment flow testable offline; Stripe adapter behind the same interface |
 | Refresh token in httpOnly cookie per app | XSS can't read it; apps on different localhost ports don't clobber each other's sessions |
 | Tailwind v4 + hand-written shadcn-style components | Tokens in CSS, no generator dependency; Radix for accessible primitives |
@@ -64,6 +64,8 @@ See [docs/api-documentation.md](docs/api-documentation.md) (REST + Socket.IO con
 `.env` at the repo root is read by the API (`tsx --env-file`) and by Vite (`envDir: ../..`). Key switches: `GEO_PROVIDER`, `PAYMENT_PROVIDER`, `SOCKET_REDIS_ADAPTER`, `OTP_DELIVERY`, `VITE_MAP_TILE_URL`. Platform settings (dispatch radius, offer timeout, free-cancel window, maintenance mode) are edited in *Admin → Settings* and stored in `SystemSetting`.
 
 ## Known issues / limitations
+
+* Map tiles default to OpenStreetMap's free tile server (CARTO's basemaps started requiring an API key). OSM's usage policy covers development and demos only; set `VITE_MAP_TILE_URL` to a commercial tile provider for production traffic.
 
 * Dispatch timers are per process: run one API instance, or move timers to a queue before scaling out (Socket.IO Redis adapter is already supported).
 * OTP delivery and social login are architecture-only (console delivery; social endpoint returns 501).

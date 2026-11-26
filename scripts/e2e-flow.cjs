@@ -24,8 +24,8 @@ async function ctx(b, opts = {}) {
     permissions: ['geolocation'],
     ...opts,
   });
-  await c.route(/basemaps\.cartocdn\.com|fonts\.(googleapis|gstatic)\.com/, (r) =>
-    r.request().url().includes('carto') ? r.fulfill({ body: tile, contentType: 'image/png' }) : r.abort(),
+  await c.route(/tile\.openstreetmap\.org|fonts\.(googleapis|gstatic)\.com/, (r) =>
+    r.request().url().includes('openstreetmap') ? r.fulfill({ body: tile, contentType: 'image/png' }) : r.abort(),
   );
   return c;
 }

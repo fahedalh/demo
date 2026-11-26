@@ -27,7 +27,7 @@ pnpm dev
 | Admin | http://localhost:5175 | `admin@masar.demo` / `Admin123!` |
 | API | http://localhost:4000/api/health | |
 
-The demo city is Dubai. Everything works **without any API keys**: maps use an offline provider plus free CARTO tiles, payments use a built-in sandbox (test card `4242 4242 4242 4242`), and OTP codes are printed in the API log. Each simulated part is labelled and has a real adapter behind the same interface (Stripe, Mapbox/Google/OSM, SMS/email).
+The demo city is Dubai. Everything works **without any API keys**: maps use an offline provider plus free OpenStreetMap tiles, payments use a built-in sandbox (test card `4242 4242 4242 4242`), and OTP codes are printed in the API log. Each simulated part is labelled and has a real adapter behind the same interface (Stripe, Mapbox/Google/OSM, SMS/email).
 
 **Try the full flow:** in the driver app go online (the *Demo GPS simulation* drives the car for you) → book a ride in the passenger app → accept the request → watch the car approach → *I've arrived* → *Start trip* with the passenger's PIN → *Complete* → rate the driver → see the trip and money in the admin console. Step-by-step in [docs/setup.md](docs/setup.md).
 

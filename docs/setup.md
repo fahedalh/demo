@@ -68,7 +68,7 @@ See `.env.example` — every variable is documented there. Highlights:
 |---|---|---|
 | `GEO_PROVIDER` | `local` | `osm`, `mapbox` (`MAPBOX_TOKEN`), `google` (`GOOGLE_MAPS_API_KEY`) |
 | `PAYMENT_PROVIDER` | `sandbox` | `stripe` needs `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET` |
-| `VITE_MAP_TILE_URL` | CARTO basemaps | Any XYZ raster tile URL (Mapbox, MapTiler, self-hosted) |
+| `VITE_MAP_TILE_URL` | OpenStreetMap tiles | Any XYZ raster tile URL (Mapbox, MapTiler, self-hosted) |
 | `SOCKET_REDIS_ADAPTER` | `false` | `true` when running several API instances |
 | `OTP_DELIVERY` | `console` | Codes are printed in the API log during development |
 
@@ -76,4 +76,4 @@ See `.env.example` — every variable is documented there. Highlights:
 
 * **"Sorry, we don't operate at this pickup location"** — your browser location is outside the seeded service areas (Dubai, Abu Dhabi). The passenger app falls back to central Dubai automatically when location is denied or out of area; add your own city under *Admin → Pricing & areas*.
 * **No drivers found** — the driver must be online, approved, with an approved vehicle of the requested category, and within the dispatch radius (default 10 km, *Admin → Settings*).
-* **Map tiles missing** — the browser can't reach `basemaps.cartocdn.com`; set `VITE_MAP_TILE_URL` to a reachable tile server.
+* **Map tiles missing** — the browser can't reach `tile.openstreetmap.org`; set `VITE_MAP_TILE_URL` to a reachable tile server.

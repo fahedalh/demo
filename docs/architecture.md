@@ -57,7 +57,7 @@ REQUESTED → SEARCHING → ACCEPTED → DRIVER_ARRIVING → ARRIVED → IN_PROG
 
 **Payments.** `PaymentGateway` interface with `SandboxGateway` (default; deterministic test cards, HMAC-signed webhooks) and `StripeGateway`. Ride logic never calls a provider SDK directly, so regional providers (Checkout.com, Tap, PayTabs…) are a new adapter. Failed card charges leave the ride `PAYMENT_PENDING`; the passenger settles with another method.
 
-**Maps.** `GeoProvider` interface with `local` (offline, curated Dubai places, curved-path routing — deterministic for tests), `osm` (Photon + OSRM), `mapbox` and `google`. Network providers fall back to `local` on failure, and routes are cached in Redis. Keys stay server-side; browsers render Leaflet with CARTO tiles (or any `VITE_MAP_TILE_URL`).
+**Maps.** `GeoProvider` interface with `local` (offline, curated Dubai places, curved-path routing — deterministic for tests), `osm` (Photon + OSRM), `mapbox` and `google`. Network providers fall back to `local` on failure, and routes are cached in Redis. Keys stay server-side; browsers render Leaflet with OpenStreetMap tiles (or any `VITE_MAP_TILE_URL`).
 
 **Real time.** Socket.IO with JWT handshake auth. Server-side room joins (`ride:<id>`) on booking/acceptance mean clients cannot miss events even if they never subscribe. Driver location: validated, throttled to 2/s/socket, written to Redis every ping, Postgres every 5 s, and the per-ride trail table while on a trip. Clients refetch over REST after reconnecting (`/rides/active`), and `connectionStateRecovery` replays missed packets for 2 minutes.
 
