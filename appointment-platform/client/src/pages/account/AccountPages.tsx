@@ -1,3 +1,4 @@
+import { firstName } from '@/lib/utils';
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Bell, CalendarCheck, CalendarClock, CreditCard, Heart, Wallet } from 'lucide-react';
 import { useState } from 'react';
@@ -40,7 +41,7 @@ export function AccountOverview() {
   const q = useQuery({ queryKey: ['me', 'overview'], queryFn: () => api.get<{ upcoming: Booking[]; stats: Record<string, number>; favoritesCount: number; spent: Array<{ _id: string; sum: number }> }>('/me/overview') });
   return (
     <>
-      <PageHeader title={t('account.hello', { name: user?.name.split(' ')[0] })} actions={<Button asChild><Link to="/explore">{t('actions.bookNow')}</Link></Button>} />
+      <PageHeader title={t('account.hello', { name: firstName(user?.name) })} actions={<Button asChild><Link to="/explore">{t('actions.bookNow')}</Link></Button>} />
       <QueryView query={q}>
         {(d) => (
           <div className="space-y-6">

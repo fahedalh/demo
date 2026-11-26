@@ -93,15 +93,18 @@ notifications, analytics and an optional AI layer. Details: `docs/PRD.md`.
   parity test; dark mode; real-time toasts; skeletons/empty/error states everywhere.
 
 ## 5. Current status
-- Server: typechecks; 27 tests pass (engine incl. DST & capacity, locks/race, templates, AI
-  heuristics, money units, HTTP smoke). 7 API integration tests are written but **skipped** here.
-- Client: typechecks; production build OK (route-level code splitting); 6 tests pass.
-- **Not yet verified end-to-end against a live MongoDB** — the development container could not
-  download a MongoDB binary (network policy). Run `MONGODB_TEST_URI=… npm test -w server` and
-  `npm run seed && npm run dev` locally to verify.
+- Server: typechecks; 27 unit/smoke tests pass; **7 API integration tests pass against real MongoDB**
+  (`npm run test:integration`), incl. two concurrent bookings for one slot → exactly one 201 + one 409.
+- Client: typechecks; production build OK (route-level code splitting); 7 tests pass (incl. EN/AR key parity).
+- **E2E (`npm run test:e2e`): 13/13 flows pass with zero browser console/API errors** — EN landing,
+  AI search, guest salon booking (provider step, pay at location), clinic booking with required
+  custom fields + sandbox deposit payment, owner overview/calendar/reservations/services/settings,
+  admin overview & pending approvals, Arabic RTL landing/account/business page, mobile (no overflow).
+- Bugs found & fixed by these runs: global Mongoose `sanitizeFilter` broke the app's own `$in`/`$gte`
+  queries; `useEffect(() => window.scrollTo())` returned a Promise in current Chromium and crashed
+  layouts; booking wizard skipped the provider step; seed slugs mangled accented names.
 
 ## 6. Known issues / limitations
-- End-to-end flows have not been exercised against a real database in this environment (see above).
 - Client main chunk ~490 kB (i18n JSON + Radix + luxon); locales could be lazy-loaded.
 - Background jobs run in-process (idempotent); move to a worker/queue for large deployments.
 - Push notifications and calendar sync (Google/Outlook) are interfaces only.
@@ -110,8 +113,8 @@ notifications, analytics and an optional AI layer. Details: `docs/PRD.md`.
 - `availableOn` search evaluates at most 60 candidates (latency bound).
 
 ## 7. Pending tasks (next session)
-1. Run the integration suite and a manual pass against MongoDB; fix anything found.
-2. Playwright E2E: guest booking, customer cancel/reschedule, owner confirm & drag-and-drop, admin approve.
+1. Extend E2E: customer cancel/reschedule, owner drag-and-drop & status changes, admin approve, staff login.
+2. Wire `test:integration` + `test:e2e` into CI (GitHub Actions).
 3. Stripe Billing for recurring subscriptions; Stripe Connect for payouts to businesses.
 4. Google/Outlook calendar sync; web push; WhatsApp template messages.
 5. Lazy-load locale bundles; image optimisation; SSR/prerender for business pages (SEO).

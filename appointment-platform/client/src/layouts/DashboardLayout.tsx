@@ -23,7 +23,9 @@ export function DashboardLayout({ sections, header, footer }: { sections: NavSec
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const loc = useLocation();
-  useEffect(() => setOpen(false), [loc.pathname]);
+  useEffect(() => {
+    setOpen(false);
+  }, [loc.pathname]);
 
   const nav = (
     <nav className="flex h-full flex-col gap-5 overflow-y-auto p-4 scrollbar-thin" aria-label="Dashboard">

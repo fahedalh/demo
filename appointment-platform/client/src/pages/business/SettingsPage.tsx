@@ -220,7 +220,9 @@ function BrandingTab() {
 function useSettingsForm() {
   const { business } = useTenant();
   const [s, setS] = useState<BusinessSettings>(business.settings);
-  useEffect(() => setS(business.settings), [business.settings]);
+  useEffect(() => {
+    setS(business.settings);
+  }, [business.settings]);
   return [s, setS] as const;
 }
 

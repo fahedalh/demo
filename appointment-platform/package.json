@@ -3,7 +3,11 @@
   "private": true,
   "version": "0.1.0",
   "description": "Multipurpose, multi-tenant appointment booking SaaS (React + Node.js + MongoDB)",
-  "workspaces": ["shared", "server", "client"],
+  "workspaces": [
+    "shared",
+    "server",
+    "client"
+  ],
   "scripts": {
     "dev": "concurrently -n api,web -c yellow,cyan \"npm run dev -w server\" \"npm run dev -w client\"",
     "build": "npm run build -w server && npm run build -w client",
@@ -11,10 +15,15 @@
     "seed": "npm run seed -w server",
     "test": "npm test -w server && npm test -w client",
     "typecheck": "npm run typecheck -w server && npm run typecheck -w client",
-    "lint": "npm run typecheck"
+    "lint": "npm run typecheck",
+    "test:integration": "npm run test:integration -w server",
+    "test:e2e": "npm run test:e2e -w server",
+    "db:dev": "npm run db:dev -w server"
   },
   "devDependencies": {
     "concurrently": "^9.1.0"
   },
-  "engines": { "node": ">=20" }
+  "engines": {
+    "node": ">=20"
+  }
 }

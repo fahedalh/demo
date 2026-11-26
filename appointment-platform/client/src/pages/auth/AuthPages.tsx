@@ -1,3 +1,4 @@
+import { firstName } from '@/lib/utils';
 import { Briefcase, CalendarCheck } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -48,7 +49,7 @@ export function LoginPage() {
         onSubmit={form.handleSubmit(async (v) => {
           try {
             const u = await login(v.email, v.password);
-            toast.success(t('auth.welcome', { name: u.name.split(' ')[0] }));
+            toast.success(t('auth.welcome', { name: firstName(u.name) }));
             navigate(safeNext(sp.get('next')) ?? homeFor(u), { replace: true });
           } catch (e) {
             applyServerErrors(form, e);
@@ -102,7 +103,7 @@ export function RegisterPage() {
         onSubmit={form.handleSubmit(async (v) => {
           try {
             const u = await register({ ...v, phone: v.phone || undefined, accountType: type });
-            toast.success(t('auth.welcome', { name: u.name.split(' ')[0] }));
+            toast.success(t('auth.welcome', { name: firstName(u.name) }));
             navigate(type === 'business' ? '/onboarding' : safeNext(sp.get('next')) ?? '/account', { replace: true });
           } catch (e) {
             applyServerErrors(form, e);

@@ -11,7 +11,10 @@
     "start": "NODE_ENV=production node dist/index.js",
     "seed": "npm run build -w @bookly/shared --prefix .. && tsx src/scripts/seed.ts",
     "test": "npm run build -w @bookly/shared --prefix .. && vitest run",
-    "typecheck": "tsc --noEmit -p tsconfig.json"
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test:integration": "npm run build -w @bookly/shared --prefix .. && INTEGRATION=1 vitest run tests/api.integration.test.ts",
+    "test:e2e": "npm run build -w @bookly/shared --prefix .. && npm run build -w client --prefix .. && tsx tests/e2e/smoke.e2e.ts",
+    "db:dev": "node scripts/mongo-dev.cjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.14.0",
@@ -52,6 +55,7 @@
     "@types/nodemailer": "^8.0.2",
     "@types/supertest": "^7.2.1",
     "@types/swagger-ui-express": "^4.1.8",
+    "mongodb-memory-server": "^10.4.3",
     "pino-pretty": "^13.2.0",
     "supertest": "^7.3.2",
     "tsx": "^4.23.15",

@@ -34,7 +34,9 @@ export function BookingsPage() {
   const [open, setOpen] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const staffList = useTenantList<Staff>('staff', {}, can('bookings:read'));
-  useEffect(() => setPage(1), [tab, dq, staff]);
+  useEffect(() => {
+    setPage(1);
+  }, [tab, dq, staff]);
 
   const now = new Date().toISOString();
   const params: Record<string, string | number | undefined> = { page, limit: 25, q: dq || undefined, staff: staff || undefined };

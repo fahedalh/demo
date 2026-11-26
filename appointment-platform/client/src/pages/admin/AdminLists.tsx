@@ -54,7 +54,9 @@ export function AdminBusinesses() {
   const dq = useDebounce(q);
   const [status, setStatus] = useState(sp.get('status') ?? '');
   const [page, setPage] = useState(1);
-  useEffect(() => setPage(1), [dq, status]);
+  useEffect(() => {
+    setPage(1);
+  }, [dq, status]);
   const list = useList<Business & { owner: { name: string; email: string }; plan: string }>('businesses', '/admin/businesses', { q: dq || undefined, status: status || undefined, page });
   const patch = async (id: string, body: Record<string, unknown>) => {
     try {
@@ -112,7 +114,9 @@ export function AdminUsers() {
   const dq = useDebounce(q);
   const [role, setRole] = useState('');
   const [page, setPage] = useState(1);
-  useEffect(() => setPage(1), [dq, role]);
+  useEffect(() => {
+    setPage(1);
+  }, [dq, role]);
   const list = useList<User>('users', '/admin/users', { q: dq || undefined, role: role || undefined, page });
   const patch = async (id: string, body: Record<string, unknown>) => {
     try {
@@ -230,7 +234,9 @@ export function AdminAudit() {
   const [q, setQ] = useState('');
   const dq = useDebounce(q);
   const [page, setPage] = useState(1);
-  useEffect(() => setPage(1), [dq]);
+  useEffect(() => {
+    setPage(1);
+  }, [dq]);
   const list = useList<{ _id: string; action: string; actorName?: string; entity?: string; entityId?: string; business?: { name: string }; ip?: string; createdAt: string; meta?: unknown }>('audit', '/admin/audit-logs', { q: dq || undefined, page });
   return (
     <>

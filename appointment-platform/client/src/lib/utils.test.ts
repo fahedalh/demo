@@ -9,3 +9,11 @@ describe('utils', () => {
   });
   it('builds initials', () => expect(initials('Layla Haddad')).toBe('LH'));
 });
+
+import { firstName } from './utils';
+describe('firstName', () => {
+  it('skips honorifics', () => {
+    expect(firstName('Dr. Rania Nour')).toBe('Rania');
+    expect(firstName('Sara Al-Qahtani')).toBe('Sara');
+  });
+});

@@ -13,8 +13,12 @@ export function PublicLayout() {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const loc = useLocation();
-  useEffect(() => setOpen(false), [loc.pathname]);
-  useEffect(() => window.scrollTo(0, 0), [loc.pathname]);
+  useEffect(() => {
+    setOpen(false);
+  }, [loc.pathname]);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [loc.pathname]);
   const links = [
     { to: '/explore', label: t('nav.explore') },
     { to: '/pricing', label: t('nav.pricing') },

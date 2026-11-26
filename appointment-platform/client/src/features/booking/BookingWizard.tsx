@@ -224,7 +224,10 @@ export function BookingWizard({ data, initialService, onDone }: { data: PublicBu
                     setStaffId(undefined);
                     setSlot(null);
                     setDetails((d) => ({ ...d, mode: s.sessionModes[0] ?? 'in_person', attendees: 1 }));
-                    go(steps[1] ?? 'datetime');
+                    // Decide from the chosen service, not from `steps` (computed before it was selected).
+                    const flowHasStaff = (category?.bookingFlow?.steps ?? ['staff']).includes('staff');
+                    const choosable = staff.filter((x) => s.staff.includes(x._id)).length > 1;
+                    go(flowHasStaff && settings.allowStaffSelection && choosable ? 'staff' : 'datetime');
                   }}
                   className={cn('flex w-full items-center gap-4 rounded-2xl border p-4 text-start transition-all hover:border-brand hover:shadow-soft', service?._id === s._id && 'border-brand bg-brand/5')}
                 >

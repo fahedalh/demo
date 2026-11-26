@@ -1,7 +1,7 @@
 /**
- * End-to-end API tests against a real MongoDB. Skipped unless MONGODB_TEST_URI is set, e.g.
- *   MONGODB_TEST_URI=mongodb://127.0.0.1:27017/bookly_test npm test
- * The database is dropped before the run.
+ * End-to-end API tests against a real MongoDB. Enabled with either
+ *   MONGODB_TEST_URI=mongodb://127.0.0.1:27017/bookly_test npm test   (existing server; dropped first)
+ *   INTEGRATION=1 npm test                                             (throwaway mongodb-memory-server)
  */
 import mongoose from 'mongoose';
 import request from 'supertest';
@@ -9,8 +9,9 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { DateTime } from 'luxon';
 import { defaultWeeklySchedule } from '@bookly/shared';
 
-const uri = process.env.MONGODB_TEST_URI;
-const d = uri ? describe : describe.skip;
+let uri = process.env.MONGODB_TEST_URI;
+const d = uri || process.env.INTEGRATION ? describe : describe.skip;
+let stopMemory: (() => Promise<unknown>) | null = null;
 
 d('API (integration)', () => {
   let app: import('express').Express;
@@ -22,6 +23,12 @@ d('API (integration)', () => {
   let staffId = '';
 
   beforeAll(async () => {
+    if (!uri) {
+      const { MongoMemoryReplSet } = await import('mongodb-memory-server');
+      const rs = await MongoMemoryReplSet.create({ replSet: { count: 1 } });
+      uri = rs.getUri('bookly_test');
+      stopMemory = () => rs.stop();
+    }
     const { connectDb } = await import('../src/config/db');
     await connectDb(uri);
     await mongoose.connection.dropDatabase();
@@ -36,6 +43,7 @@ d('API (integration)', () => {
 
   afterAll(async () => {
     await mongoose.disconnect();
+    await stopMemory?.();
   });
 
   it('registers a business owner and creates a business', async () => {

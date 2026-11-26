@@ -87,7 +87,7 @@ export function BusinessPage() {
           </div>
           <div className="min-w-0 flex-1 sm:pb-2">
             <div className="flex flex-wrap items-center gap-2">
-              {cat && <Badge tone="primary"><CategoryIcon name={cat.icon} className="h-3.5 w-3.5" />{loc(cat.name)}</Badge>}
+              {cat && <Badge className="bg-white/90 text-slate-800 shadow-sm backdrop-blur dark:bg-slate-900/80 dark:text-slate-100"><CategoryIcon name={cat.icon} className="h-3.5 w-3.5" />{loc(cat.name)}</Badge>}
               {b.settings.requireApproval && <Badge tone="warning">{t('status.pending')}</Badge>}
             </div>
             <h1 className="mt-2 text-3xl font-extrabold sm:text-4xl">{b.name}</h1>

@@ -12,5 +12,5 @@
 | M7 Payments & notifications | Provider adapters (Stripe/cash/test), deposits, refunds, invoices; in-app/email/WhatsApp/SMS, reminders | ✅ (Stripe webhook verified by unit test only) |
 | M8 i18n | EN/AR, RTL, currencies, timezones | ✅ |
 | M9 AI layer | Provider interface, heuristic NL search, no-show risk, recommendations, LLM descriptions | ✅ (LLM optional) |
-| M10 Quality | Unit tests (engine, policies, templates), API tests (need MongoDB), Docker | 🟡 |
+| M10 Quality | Unit, API integration (real MongoDB) and browser E2E suites; Docker | ✅ (CI pipeline pending) |
 | **Next** | Google/Outlook calendar sync (interface exists), web push, Stripe Billing for subscriptions, custom domains, SSO, mobile app, AI assistant chat, schedule optimisation, E2E (Playwright) suite | ⏳ |

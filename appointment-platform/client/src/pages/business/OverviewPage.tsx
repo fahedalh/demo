@@ -1,3 +1,4 @@
+import { firstName } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 import { AlertTriangle, Brain, CalendarCheck, Coins, Lock, Star, UserPlus, UserX } from 'lucide-react';
 import { useState } from 'react';
@@ -42,7 +43,7 @@ export function OverviewPage() {
   return (
     <>
       <PageHeader
-        title={t('overview.greeting', { name: user?.name.split(' ')[0] })}
+        title={t('overview.greeting', { name: firstName(user?.name) })}
         description={business.name}
         actions={
           <NativeSelect value={days} onChange={(e) => setDays(Number(e.target.value))} className="w-40" aria-label="Range">

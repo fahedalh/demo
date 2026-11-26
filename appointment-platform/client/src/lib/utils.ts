@@ -21,3 +21,10 @@ export function initials(name?: string) {
     .map((p) => p[0]!.toUpperCase())
     .join('');
 }
+
+const TITLES = /^(dr|mr|mrs|ms|miss|prof|eng|sheikh|د|أ|م)\.?$/i;
+/** First name for greetings, skipping honorifics ("Dr. Rania Nour" → "Rania"). */
+export function firstName(name?: string) {
+  const parts = (name ?? '').split(/\s+/).filter(Boolean);
+  return parts.find((p) => !TITLES.test(p)) ?? parts[0] ?? '';
+}

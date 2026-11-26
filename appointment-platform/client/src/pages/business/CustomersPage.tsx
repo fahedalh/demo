@@ -26,7 +26,9 @@ export function CustomersPage() {
   const [sort, setSort] = useState('recent');
   const [page, setPage] = useState(1);
   const [open, setOpen] = useState<string | null>(null);
-  useEffect(() => setPage(1), [dq, sort]);
+  useEffect(() => {
+    setPage(1);
+  }, [dq, sort]);
   const list = useQuery({ queryKey: ['customers', id, dq, sort, page], queryFn: () => api.get<Paginated<Customer>>(`/businesses/${id}/customers`, { q: dq || undefined, sort, page }), placeholderData: keepPreviousData });
 
   return (

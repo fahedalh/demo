@@ -24,7 +24,7 @@ import { PlatformSettings } from '../modules/settings/settings.model';
 import { Staff } from '../modules/staff/staff.model';
 import { Role } from '../modules/users/role.model';
 import { User } from '../modules/users/user.model';
-import { bookingReference } from '../utils/crypto';
+import { bookingReference, slugify } from '../utils/crypto';
 
 const L = (en: string, ar: string) => ({ en, ar });
 const sched = (days: number[], intervals: Array<[string, string]>): WeeklySchedule =>
@@ -33,8 +33,8 @@ const SUN_THU = [0, 1, 2, 3, 4];
 const SAT_THU = [6, 0, 1, 2, 3, 4];
 
 // Deterministic pseudo-random for reproducible seeds.
-let seed = 42;
-const rnd = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
+let rngState = 42;
+const rnd = () => ((rngState = (rngState * 16807) % 2147483647) - 1) / 2147483646;
 const pick = <T,>(a: T[]) => a[Math.floor(rnd() * a.length)];
 
 const CATEGORIES = [
@@ -265,12 +265,12 @@ const BUSINESSES: BizSpec[] = [
   },
 ];
 
-async function main() {
-  if (env.NODE_ENV === 'production' && process.env.SEED_FORCE !== 'true') throw new Error('Refusing to seed in production');
-  await connectDb();
+/** Drops the connected database and inserts the demo dataset. Exported for E2E tests. */
+export async function seed(log: (msg: string) => void = console.log) {
+  rngState = 42;
   await mongoose.connection.dropDatabase();
   await Promise.all(mongoose.modelNames().map((n) => mongoose.model(n).syncIndexes()));
-  console.log('Database reset');
+  log('Database reset');
 
   await PlatformSettings.create({ key: 'global', platformName: 'Bookly' });
   await Role.insertMany([
@@ -296,7 +296,7 @@ async function main() {
     const owner = await User.create({ name: spec.owner[0], email: spec.owner[1], passwordHash: pw.owner, role: 'business_owner' });
     const settings: Record<string, unknown> = {};
     const business = new Business({
-      owner: owner._id, category: cat._id, name: spec.name, slug: spec.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+      owner: owner._id, category: cat._id, name: spec.name, slug: slugify(spec.name),
       tagline: spec.tagline, description: spec.description, featured: !!spec.featured,
       branding: { primaryColor: spec.primaryColor, accentColor: spec.accentColor },
       contact: { email: spec.owner[1], phone: '+000 000 0000' },
@@ -421,7 +421,7 @@ async function main() {
       const [sa] = await Review.aggregate([{ $match: { staff: s._id } }, { $group: { _id: null, avg: { $avg: '$rating' }, n: { $sum: 1 } } }]);
       await Staff.updateOne({ _id: s._id }, { $set: { rating: { average: Math.round((sa?.avg ?? 0) * 10) / 10, count: sa?.n ?? 0 } } });
     }
-    console.log(`  ✓ ${spec.name} (${spec.category})`);
+    log(`  ✓ ${spec.name} (${spec.category})`);
   }
 
   // A pending business to demo the approval queue.
@@ -432,19 +432,27 @@ async function main() {
   await Branch.create({ business: pending._id, name: 'Main branch', workingHours: defaultWeeklySchedule() });
   await Subscription.create({ business: pending._id, plan: plans[0]._id });
 
-  console.log(`\nSeeded ${BUSINESSES.length + 1} businesses, ${bookingCount} bookings.`);
-  console.log('\nDemo accounts:');
-  console.log('  Super admin     admin@bookly.dev    / Admin123!');
-  console.log('  Business owner  clinic@bookly.dev   / Owner123!   (also salon@, tutor@, legal@, auto@, hive@, civic@)');
-  console.log('  Staff           layla@bookly.dev    / Staff123!   (also maya@bookly.dev)');
-  console.log('  Customer        sara@example.com    / Customer123! (also yousef@, emily@, ahmed@, lina@)');
+  log(`\nSeeded ${BUSINESSES.length + 1} businesses, ${bookingCount} bookings.`);
+  log('\nDemo accounts:');
+  log('  Super admin     admin@bookly.dev    / Admin123!');
+  log('  Business owner  clinic@bookly.dev   / Owner123!   (also salon@, tutor@, legal@, auto@, hive@, civic@)');
+  log('  Staff           layla@bookly.dev    / Staff123!   (also maya@bookly.dev)');
+  log('  Customer        sara@example.com    / Customer123! (also yousef@, emily@, ahmed@, lina@)');
+}
+
+async function main() {
+  if (env.NODE_ENV === 'production' && process.env.SEED_FORCE !== 'true') throw new Error('Refusing to seed in production');
+  await connectDb();
+  await seed();
   await mongoose.disconnect();
 }
 
-main().catch(async (err) => {
-  console.error(err);
-  await mongoose.disconnect();
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch(async (err) => {
+    console.error(err);
+    await mongoose.disconnect();
+    process.exit(1);
+  });
+}
 
 export { Types };

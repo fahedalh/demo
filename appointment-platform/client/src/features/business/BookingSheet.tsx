@@ -37,7 +37,9 @@ export function BookingSheet({ bookingId, onOpenChange }: { bookingId: string | 
   const [cash, setCash] = useState('');
   const [busy, setBusy] = useState(false);
   const b = q.data;
-  useEffect(() => setNotes(b?.internalNotes ?? ''), [b?.internalNotes]);
+  useEffect(() => {
+    setNotes(b?.internalNotes ?? '');
+  }, [b?.internalNotes]);
 
   const refresh = () => {
     void qc.invalidateQueries({ queryKey: ['bookings', id] });

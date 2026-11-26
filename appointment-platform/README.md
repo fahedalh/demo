@@ -20,7 +20,7 @@ appointment-platform/
 
 ## Quick start (local)
 
-Requirements: Node 20+, MongoDB 6+ (local or Atlas). Redis is optional.
+Requirements: Node 20+, MongoDB 6+ (local or Atlas — or run `npm run db:dev` for a throwaway local replica set). Redis is optional.
 
 ```bash
 cd appointment-platform
@@ -63,7 +63,10 @@ docker compose exec -e SEED_FORCE=true server node server/dist/scripts/seed.js  
 | `npm run build` | Compiles shared + server (`server/dist`) and client (`client/dist`) |
 | `npm start` | Production API; also serves `client/dist` when present |
 | `npm run seed` | Drops and seeds the database |
-| `npm test` | Server unit + smoke tests, client tests. API integration tests run when `MONGODB_TEST_URI` is set |
+| `npm test` | Server unit + smoke tests, client tests |
+| `npm run test:integration` | API tests against a throwaway MongoDB (concurrency, isolation, auth) |
+| `npm run test:e2e` | Seeds a throwaway DB, serves API + built client, drives Chromium through 13 user flows, saves screenshots |
+| `npm run db:dev` | Starts a local throwaway MongoDB replica set on :27017 |
 | `npm run typecheck` | Type-checks server and client |
 
 ## Documentation
