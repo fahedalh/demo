@@ -1,6 +1,6 @@
 /**
  * Cross-app browser test of the full workflow, driving real Chromium sessions:
- *   passenger books → driver gets the live offer → accepts → GPS simulation drives to pickup →
+ *   passenger books → driver gets the live offer → accepts → in-app chat → GPS simulation drives to pickup →
  *   arrives → PIN-verified start → complete → passenger rates. Screenshots → test-results/e2e.
  *
  * Requires the API and the passenger (5173) + driver (5174) dev servers running and seeded data:
@@ -89,7 +89,19 @@ async function login(p, url, id, pw) {
   await p.waitForTimeout(500);
   await p.screenshot({ path: `${OUT}/p-arriving.png` });
 
-  const pin = (await p.locator('p.tabular.text-xl').first().textContent()).trim();
+  await p.getByRole('button', { name: 'Message' }).click();
+  await p.getByPlaceholder('Type a message…').fill('hello');
+  await p.getByRole('button', { name: 'Send' }).click();
+  await p.waitForTimeout(800);
+  await p.keyboard.press('Escape');
+  await p.waitForTimeout(500);
+  const pin = await p.evaluate(async () => {
+    const { accessToken } = JSON.parse(sessionStorage.getItem('masar.session'));
+    const r = await fetch('/api/rides/active', {
+      headers: { Authorization: `Bearer ${accessToken}`, 'X-Client-App': 'passenger' },
+    }).then((x) => x.json());
+    return r.ride.startPin;
+  });
   await d.getByRole('button', { name: 'I’ve arrived' }).click();
   await d.waitForTimeout(1500);
   await p.screenshot({ path: `${OUT}/p-arrived.png` });

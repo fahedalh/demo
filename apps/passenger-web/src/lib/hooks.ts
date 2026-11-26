@@ -32,7 +32,9 @@ export function useActiveRide() {
 
 export function useDriverLocation(rideId: string | undefined) {
   const [loc, setLoc] = useState<DriverLocationPayload | null>(null);
-  useEffect(() => setLoc(null), [rideId]);
+  useEffect(() => {
+    setLoc(null);
+  }, [rideId]);
   const handler = useCallback(
     (p: DriverLocationPayload) => {
       if (!rideId || p.rideId !== rideId) return;

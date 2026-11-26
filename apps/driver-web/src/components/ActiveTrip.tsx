@@ -316,7 +316,10 @@ function DriverChat({
     [ride.id, qc],
   );
   useSocketEvent('ride:message', add);
-  useEffect(() => end.current?.scrollIntoView({ behavior: 'smooth' }), [data?.length]);
+  useEffect(() => {
+    // Braces matter: newer browsers return a Promise from scrollIntoView, which React rejects as a cleanup.
+    end.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [data?.length]);
   const send = useMutation({
     mutationFn: (body: string) => api.post<MessageDTO>(`/rides/${ride.id}/messages`, { body }),
     onSuccess: (m) => {

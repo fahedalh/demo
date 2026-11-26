@@ -313,7 +313,10 @@ export function ChatDialog({
     [ride.id, qc],
   );
   useSocketEvent('ride:message', onMessage);
-  useEffect(() => bottom.current?.scrollIntoView({ behavior: 'smooth' }), [data?.length, open]);
+  useEffect(() => {
+    // Braces matter: newer browsers return a Promise from scrollIntoView, which React rejects as a cleanup.
+    bottom.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [data?.length, open]);
   const send = useMutation({
     mutationFn: (body: string) => api.post<MessageDTO>(`/rides/${ride.id}/messages`, { body }),
     onSuccess: (m) => {
