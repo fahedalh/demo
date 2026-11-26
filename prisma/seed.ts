@@ -263,6 +263,20 @@ async function main() {
       radiusKm: 35,
     },
   });
+  // Madinah (Saudi Arabia): centred on Al-Masjid an-Nabawi; covers the city and the airport.
+  await prisma.serviceArea.create({
+    data: {
+      name: 'Madinah',
+      nameAr: 'المدينة المنورة',
+      city: 'Madinah',
+      country: 'SA',
+      currency: 'SAR',
+      timezone: 'Asia/Riyadh',
+      centerLat: 24.4672,
+      centerLng: 39.6111,
+      radiusKm: 30,
+    },
+  });
   const areas = await prisma.serviceArea.findMany();
   const cats: Record<string, { id: string; rule: PricingRule }> = {};
   for (const c of CATEGORIES) {

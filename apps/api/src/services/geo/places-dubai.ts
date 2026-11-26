@@ -1,5 +1,5 @@
 /**
- * Curated places used by the offline "local" geo provider so the platform works without any
+ * Curated places (Dubai, plus key Madinah landmarks) used by the offline "local" geo provider so the platform works without any
  * map API keys (and tests are deterministic). Real deployments use mapbox/google/osm providers.
  */
 export interface Place {
@@ -313,5 +313,56 @@ export const DUBAI_PLACES: Place[] = [
     lat: 25.2524,
     lng: 55.3305,
     kind: 'mall',
+  },
+  // Madinah, Saudi Arabia
+  {
+    id: 'm1',
+    name: "Al-Masjid an-Nabawi (Prophet's Mosque)",
+    nameAr: 'المسجد النبوي الشريف',
+    address: 'Central Area, Madinah',
+    addressAr: 'المنطقة المركزية، المدينة المنورة',
+    lat: 24.4672,
+    lng: 39.6111,
+    kind: 'landmark',
+  },
+  {
+    id: 'm2',
+    name: 'Quba Mosque',
+    nameAr: 'مسجد قباء',
+    address: 'Quba, Madinah',
+    addressAr: 'قباء، المدينة المنورة',
+    lat: 24.4393,
+    lng: 39.6173,
+    kind: 'landmark',
+  },
+  {
+    id: 'm3',
+    name: 'Masjid al-Qiblatayn',
+    nameAr: 'مسجد القبلتين',
+    address: 'Khalid Ibn Al Walid Rd, Madinah',
+    addressAr: 'طريق خالد بن الوليد، المدينة المنورة',
+    lat: 24.484,
+    lng: 39.579,
+    kind: 'landmark',
+  },
+  {
+    id: 'm4',
+    name: 'Uhud Martyrs (Sayyid al-Shuhada Mosque)',
+    nameAr: 'مسجد سيد الشهداء - جبل أحد',
+    address: 'Uhud, Madinah',
+    addressAr: 'أحد، المدينة المنورة',
+    lat: 24.504,
+    lng: 39.613,
+    kind: 'landmark',
+  },
+  {
+    id: 'm5',
+    name: 'Prince Mohammad bin Abdulaziz Airport',
+    nameAr: 'مطار الأمير محمد بن عبدالعزيز الدولي',
+    address: 'Airport Rd, Madinah',
+    addressAr: 'طريق المطار، المدينة المنورة',
+    lat: 24.5534,
+    lng: 39.7051,
+    kind: 'airport',
   },
 ];
