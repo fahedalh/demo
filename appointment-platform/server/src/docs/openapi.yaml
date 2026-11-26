@@ -1,0 +1,1134 @@
+openapi: 3.1.0
+info:
+  title: Bookly API
+  version: 0.1.0
+  description: |
+    Multi-tenant appointment booking API. Errors use `{ error: { code, message, details } }`.
+    Validation errors return 422 with `details.fields`. Plan limits return 402 `PLAN_LIMIT`.
+servers:
+  - url: /api
+components:
+  securitySchemes:
+    bearer: { type: http, scheme: bearer, bearerFormat: JWT }
+  schemas:
+    Register:
+      type: object
+      required: [name, email, password]
+      properties:
+        name: { type: string }
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8 }
+        phone: { type: string }
+        locale: { type: string, enum: [en, ar] }
+        accountType: { type: string, enum: [customer, business] }
+    Login:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string }
+        password: { type: string }
+    CreateBooking:
+      type: object
+      required: [service, start, customer]
+      properties:
+        service: { type: string }
+        start: { type: string, format: date-time }
+        staff: { type: string }
+        branch: { type: string }
+        attendees: { type: integer }
+        mode: { type: string, enum: [in_person, online] }
+        customer:
+          type: object
+          properties: { name: { type: string }, email: { type: string }, phone: { type: string } }
+        answers: { type: object, additionalProperties: true }
+        note: { type: string }
+        paymentMethod: { type: string, enum: [online, cash] }
+        recurrence:
+          type: object
+          properties: { frequency: { type: string, enum: [weekly, biweekly, monthly] }, count: { type: integer, maximum: 12 } }
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties: { code: { type: string }, message: { type: string }, details: { type: object } }
+paths:
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: "Register (accountType customer|business); sets refresh cookie"
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/Register' } } } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: "Log in; returns access token + profile"
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/Login' } } } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: "Rotate refresh token (cookie) and get a new access token"
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: "Revoke current refresh token"
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /auth/logout-all:
+    post:
+      tags: [Auth]
+      summary: "Revoke all sessions"
+      security: [{ bearer: [] }]
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: "Current user + memberships"
+      security: [{ bearer: [] }]
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    patch:
+      tags: [Auth]
+      summary: "Update profile, locale, notification preferences"
+      security: [{ bearer: [] }]
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /auth/change-password:
+    post:
+      tags: [Auth]
+      summary: "Change password (revokes sessions)"
+      security: [{ bearer: [] }]
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /settings:
+    get:
+      tags: [Public]
+      summary: "Public platform settings and enabled features"
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /categories:
+    get:
+      tags: [Public]
+      summary: "Active business categories with booking-flow config"
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /plans:
+    get:
+      tags: [Public]
+      summary: "Active subscription plans"
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /search/businesses:
+    get:
+      tags: [Search]
+      summary: "Search businesses (q, category, city, minPrice, maxPrice, minRating, lat, lng, radiusKm, availableOn, sort, page, limit)"
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /search/services/popular:
+    get:
+      tags: [Search]
+      summary: "Popular services"
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /public/businesses/{slug}:
+    get:
+      tags: [Public]
+      summary: "Public business page (services, staff, branches, reviews, payment options)"
+      parameters:
+        - { name: slug, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /public/businesses/{slug}/availability:
+    get:
+      tags: [Booking]
+      summary: "Available slots for a service on a date (service, date, staff?, branch?, attendees?)"
+      parameters:
+        - { name: slug, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /public/businesses/{slug}/availability/days:
+    get:
+      tags: [Booking]
+      summary: "Slot counts per day (service, from, days)"
+      parameters:
+        - { name: slug, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /public/businesses/{slug}/bookings:
+    post:
+      tags: [Booking]
+      summary: "Create booking (guest or authenticated); optional recurrence and online checkout"
+      parameters:
+        - { name: slug, in: path, required: true, schema: { type: string } }
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/CreateBooking' } } } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /public/businesses/{slug}/waitlist:
+    post:
+      tags: [Booking]
+      summary: "Join the waiting list for a date"
+      parameters:
+        - { name: slug, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /public/bookings/track:
+    get:
+      tags: [Booking]
+      summary: "Guest lookup by reference + email"
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /public/bookings/track/cancel:
+    post:
+      tags: [Booking]
+      summary: "Guest cancellation (policy enforced)"
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /public/bookings/track/reschedule:
+    post:
+      tags: [Booking]
+      summary: "Guest reschedule (policy enforced)"
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /public/bookings/track/pay:
+    post:
+      tags: [Booking]
+      summary: "Guest online payment checkout"
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /me/overview:
+    get:
+      tags: [Customer]
+      summary: "Customer dashboard overview"
+      security: [{ bearer: [] }]
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /me/bookings:
+    get:
+      tags: [Customer]
+      summary: "My bookings (scope upcoming|past|all)"
+      security: [{ bearer: [] }]
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /me/bookings/{id}:
+    get:
+      tags: [Customer]
+      summary: "Booking detail with payments and review"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /me/bookings/{id}/cancel:
+    post:
+      tags: [Customer]
+      summary: "Cancel (policy enforced)"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /me/bookings/{id}/reschedule:
+    post:
+      tags: [Customer]
+      summary: "Reschedule (policy enforced)"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /me/bookings/{id}/pay:
+    post:
+      tags: [Customer]
+      summary: "Start online payment"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /me/bookings/{id}/review:
+    post:
+      tags: [Customer]
+      summary: "Review a completed booking"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /me/favorites:
+    get:
+      tags: [Customer]
+      summary: "Favourite businesses"
+      security: [{ bearer: [] }]
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /me/favorites/{businessId}:
+    put:
+      tags: [Customer]
+      summary: "Add favourite"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    delete:
+      tags: [Customer]
+      summary: "Remove favourite"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /me/payments:
+    get:
+      tags: [Customer]
+      summary: "Payment history"
+      security: [{ bearer: [] }]
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /notifications:
+    get:
+      tags: [Notifications]
+      summary: "In-app notifications (unread count included)"
+      security: [{ bearer: [] }]
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /notifications/read-all:
+    post:
+      tags: [Notifications]
+      summary: "Mark all read"
+      security: [{ bearer: [] }]
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /notifications/{id}/read:
+    post:
+      tags: [Notifications]
+      summary: "Mark one read"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /businesses:
+    post:
+      tags: [Business]
+      summary: "Create a business (caller becomes owner)"
+      security: [{ bearer: [] }]
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /businesses/{businessId}:
+    get:
+      tags: [Business]
+      summary: "Business detail + caller's role/permissions"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    patch:
+      tags: [Business]
+      summary: "Update profile, branding, settings/policies"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /businesses/{businessId}/usage:
+    get:
+      tags: [Business]
+      summary: "Plan + usage"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /businesses/{businessId}/team:
+    get:
+      tags: [Business]
+      summary: "Team members"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    post:
+      tags: [Business]
+      summary: "Add/change member (manager|staff)"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /businesses/{businessId}/team/{userId}:
+    delete:
+      tags: [Business]
+      summary: "Remove member"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+        - { name: userId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /businesses/{businessId}/branches:
+    get:
+      tags: [Branches]
+      summary: "List branches (page, limit, q, active)"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    post:
+      tags: [Branches]
+      summary: "Create branche"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /businesses/{businessId}/branches/{id}:
+    get:
+      tags: [Branches]
+      summary: "Get one"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    patch:
+      tags: [Branches]
+      summary: "Update"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    delete:
+      tags: [Branches]
+      summary: "Delete / deactivate"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /businesses/{businessId}/staff:
+    get:
+      tags: [Staff]
+      summary: "List staff (page, limit, q, active)"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    post:
+      tags: [Staff]
+      summary: "Create staff member"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /businesses/{businessId}/staff/{id}:
+    get:
+      tags: [Staff]
+      summary: "Get one"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    patch:
+      tags: [Staff]
+      summary: "Update"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    delete:
+      tags: [Staff]
+      summary: "Delete / deactivate"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /businesses/{businessId}/services:
+    get:
+      tags: [Services]
+      summary: "List services (page, limit, q, active)"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    post:
+      tags: [Services]
+      summary: "Create service"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /businesses/{businessId}/services/{id}:
+    get:
+      tags: [Services]
+      summary: "Get one"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    patch:
+      tags: [Services]
+      summary: "Update"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    delete:
+      tags: [Services]
+      summary: "Delete / deactivate"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /businesses/{businessId}/resources:
+    get:
+      tags: [Resources]
+      summary: "List resources (page, limit, q, active)"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    post:
+      tags: [Resources]
+      summary: "Create resource"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /businesses/{businessId}/resources/{id}:
+    get:
+      tags: [Resources]
+      summary: "Get one"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    patch:
+      tags: [Resources]
+      summary: "Update"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    delete:
+      tags: [Resources]
+      summary: "Delete / deactivate"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /businesses/{businessId}/exceptions:
+    get:
+      tags: [Availability]
+      summary: "List exceptions (page, limit, q, active)"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    post:
+      tags: [Availability]
+      summary: "Create exception"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /businesses/{businessId}/exceptions/{id}:
+    get:
+      tags: [Availability]
+      summary: "Get one"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    patch:
+      tags: [Availability]
+      summary: "Update"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    delete:
+      tags: [Availability]
+      summary: "Delete / deactivate"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /businesses/{businessId}/bookings:
+    get:
+      tags: [Reservations]
+      summary: "List bookings (from, to, status, staff, branch, service, customer, q, sort, page, limit)"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    post:
+      tags: [Reservations]
+      summary: "Create booking from dashboard"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/CreateBooking' } } } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /businesses/{businessId}/bookings/availability:
+    get:
+      tags: [Reservations]
+      summary: "Availability (ignores notice windows)"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /businesses/{businessId}/bookings/{bookingId}:
+    get:
+      tags: [Reservations]
+      summary: "Booking detail"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+        - { name: bookingId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /businesses/{businessId}/bookings/{bookingId}/status:
+    patch:
+      tags: [Reservations]
+      summary: "Change status (confirm, reject, cancel, complete, no_show)"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+        - { name: bookingId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /businesses/{businessId}/bookings/{bookingId}/reschedule:
+    post:
+      tags: [Reservations]
+      summary: "Reschedule / reassign (calendar drag-and-drop)"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+        - { name: bookingId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /businesses/{businessId}/bookings/{bookingId}/notes:
+    patch:
+      tags: [Reservations]
+      summary: "Internal notes"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+        - { name: bookingId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /businesses/{businessId}/waitlist:
+    get:
+      tags: [Reservations]
+      summary: "Waiting list"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /businesses/{businessId}/customers:
+    get:
+      tags: [Customers]
+      summary: "Customer database"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /businesses/{businessId}/customers/{customerId}:
+    get:
+      tags: [Customers]
+      summary: "Customer profile with history"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+        - { name: customerId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    patch:
+      tags: [Customers]
+      summary: "Update notes/tags"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+        - { name: customerId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /businesses/{businessId}/payments:
+    get:
+      tags: [Payments]
+      summary: "Transactions + totals"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /businesses/{businessId}/payments/cash:
+    post:
+      tags: [Payments]
+      summary: "Record cash payment"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /businesses/{businessId}/payments/{paymentId}/refund:
+    post:
+      tags: [Payments]
+      summary: "Refund (full or partial)"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+        - { name: paymentId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /businesses/{businessId}/payments/{paymentId}/invoice:
+    get:
+      tags: [Payments]
+      summary: "Invoice data"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+        - { name: paymentId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /payments/webhooks/stripe:
+    post:
+      tags: [Payments]
+      summary: "Stripe webhook (signature verified)"
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /payments/test/{paymentId}:
+    get:
+      tags: [Payments]
+      summary: "Sandbox checkout details"
+      parameters:
+        - { name: paymentId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /payments/test/{paymentId}/{action}:
+    post:
+      tags: [Payments]
+      summary: "Approve/decline sandbox payment"
+      parameters:
+        - { name: paymentId, in: path, required: true, schema: { type: string } }
+        - { name: action, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /businesses/{businessId}/reviews:
+    get:
+      tags: [Reviews]
+      summary: "Reviews + rating distribution"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /businesses/{businessId}/reviews/{reviewId}:
+    patch:
+      tags: [Reviews]
+      summary: "Reply / hide"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+        - { name: reviewId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /businesses/{businessId}/analytics:
+    get:
+      tags: [Analytics]
+      summary: "Business KPIs, series, top services, staff load, heatmap"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /businesses/{businessId}/templates:
+    get:
+      tags: [Notifications]
+      summary: "Notification templates (defaults + overrides)"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    put:
+      tags: [Notifications]
+      summary: "Upsert template override"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /businesses/{businessId}/billing:
+    get:
+      tags: [Billing]
+      summary: "Plan, usage and invoices"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /businesses/{businessId}/billing/change:
+    post:
+      tags: [Billing]
+      summary: "Change plan (checkout for paid plans)"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /ai/status:
+    get:
+      tags: [AI]
+      summary: "Active AI provider"
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /ai/search-intent:
+    post:
+      tags: [AI]
+      summary: "Natural-language search → filters"
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /businesses/{businessId}/ai/description:
+    post:
+      tags: [AI]
+      summary: "Generate business description (plan feature: ai)"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /businesses/{businessId}/ai/insights:
+    get:
+      tags: [AI]
+      summary: "No-show risk + recommendations"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: businessId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /uploads/image:
+    post:
+      tags: [Uploads]
+      summary: "Upload image (multipart field `file`; Cloudinary)"
+      security: [{ bearer: [] }]
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /admin/analytics:
+    get:
+      tags: [Admin]
+      summary: "Platform analytics"
+      security: [{ bearer: [] }]
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /admin/users:
+    get:
+      tags: [Admin]
+      summary: "Users"
+      security: [{ bearer: [] }]
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /admin/users/{id}:
+    patch:
+      tags: [Admin]
+      summary: "Change role/status"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /admin/businesses:
+    get:
+      tags: [Admin]
+      summary: "Businesses"
+      security: [{ bearer: [] }]
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /admin/businesses/{id}:
+    patch:
+      tags: [Admin]
+      summary: "Approve/suspend/feature"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /admin/categories:
+    get:
+      tags: [Admin]
+      summary: "All categories"
+      security: [{ bearer: [] }]
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    post:
+      tags: [Admin]
+      summary: "Create category"
+      security: [{ bearer: [] }]
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /admin/categories/{id}:
+    patch:
+      tags: [Admin]
+      summary: "Update category & booking flow"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    delete:
+      tags: [Admin]
+      summary: "Delete unused category"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /admin/plans:
+    get:
+      tags: [Admin]
+      summary: "Plans with subscriber counts"
+      security: [{ bearer: [] }]
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    post:
+      tags: [Admin]
+      summary: "Create plan"
+      security: [{ bearer: [] }]
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /admin/plans/{id}:
+    patch:
+      tags: [Admin]
+      summary: "Update plan"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /admin/plans/subscriptions:
+    get:
+      tags: [Admin]
+      summary: "Subscriptions"
+      security: [{ bearer: [] }]
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /admin/plans/subscriptions/{id}:
+    patch:
+      tags: [Admin]
+      summary: "Change subscription"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /admin/payments:
+    get:
+      tags: [Admin]
+      summary: "All payments"
+      security: [{ bearer: [] }]
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /admin/audit-logs:
+    get:
+      tags: [Admin]
+      summary: "Audit logs"
+      security: [{ bearer: [] }]
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /admin/settings:
+    get:
+      tags: [Admin]
+      summary: "Platform settings"
+      security: [{ bearer: [] }]
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    patch:
+      tags: [Admin]
+      summary: "Update settings"
+      security: [{ bearer: [] }]
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /admin/roles:
+    get:
+      tags: [Admin]
+      summary: "Business roles & permissions"
+      security: [{ bearer: [] }]
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /admin/roles/{id}:
+    patch:
+      tags: [Admin]
+      summary: "Update role permissions"
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '4XX': { description: Error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }

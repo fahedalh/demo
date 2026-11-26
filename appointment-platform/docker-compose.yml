@@ -1,0 +1,35 @@
+services:
+  mongo:
+    image: mongo:7
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "try { rs.status().ok } catch (e) { rs.initiate({_id:'rs0',members:[{_id:0,host:'mongo:27017'}]}).ok }"]
+      interval: 5s
+      retries: 20
+    volumes: [mongo-data:/data/db]
+
+  redis:
+    image: redis:7-alpine
+    healthcheck: { test: ["CMD", "redis-cli", "ping"], interval: 5s, retries: 20 }
+
+  server:
+    build: { context: ., dockerfile: server/Dockerfile }
+    env_file: [server/.env]
+    environment:
+      NODE_ENV: production
+      MONGODB_URI: mongodb://mongo:27017/bookly?replicaSet=rs0
+      REDIS_URL: redis://redis:6379
+      APP_URL: ${APP_URL:-http://localhost:8080}
+      CORS_ORIGINS: ${APP_URL:-http://localhost:8080}
+    depends_on:
+      mongo: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    ports: ["4000:4000"]
+
+  client:
+    build: { context: ., dockerfile: client/Dockerfile }
+    depends_on: [server]
+    ports: ["8080:80"]
+
+volumes:
+  mongo-data:

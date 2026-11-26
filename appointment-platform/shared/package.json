@@ -1,0 +1,14 @@
+{
+  "name": "@bookly/shared",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Constants and types shared by server and client",
+  "main": "dist/index.js",
+  "types": "src/index.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  }
+}
