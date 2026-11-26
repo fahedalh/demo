@@ -309,10 +309,9 @@ function DriverChat({
   const add = useCallback(
     (m: MessageDTO) => {
       if (m.rideId === ride.id)
-        qc.setQueryData<MessageDTO[]>(key, (prev) =>
+        qc.setQueryData<MessageDTO[]>(['messages', ride.id], (prev) =>
           prev?.some((x) => x.id === m.id) ? prev : [...(prev ?? []), m],
         );
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     },
     [ride.id, qc],
   );

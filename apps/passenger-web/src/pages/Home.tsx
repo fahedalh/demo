@@ -122,6 +122,7 @@ export function HomePage() {
         ]
       : null;
 
+  const hasDriverPoint = !!driverPoint;
   const fitTo: [number, number][] | null = useMemo(() => {
     if (rideView) {
       if (rideView.status === 'IN_PROGRESS' && driverPoint)
@@ -157,7 +158,7 @@ export function HomePage() {
     booking.pickup?.lat,
     booking.dropoff?.lat,
     userPos?.lat,
-    !!driverPoint,
+    hasDriverPoint,
   ]);
 
   const isDesktop = typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches;

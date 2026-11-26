@@ -41,27 +41,23 @@ export function createApp() {
   app.get('/api/health', async (_req, res) => {
     const [db, cache] = await Promise.allSettled([prisma.$queryRaw`SELECT 1`, redis.ping()]);
     const ok = db.status === 'fulfilled' && cache.status === 'fulfilled';
-    res
-      .status(ok ? 200 : 503)
-      .json({
-        status: ok ? 'ok' : 'degraded',
-        db: db.status === 'fulfilled',
-        redis: cache.status === 'fulfilled',
-        time: new Date().toISOString(),
-      });
+    res.status(ok ? 200 : 503).json({
+      status: ok ? 'ok' : 'degraded',
+      db: db.status === 'fulfilled',
+      redis: cache.status === 'fulfilled',
+      time: new Date().toISOString(),
+    });
   });
 
   // Maintenance mode blocks new bookings but keeps in-flight trips and admin working.
   app.use('/api/rides', async (req, res, next) => {
     if (req.method === 'POST' && req.path === '/' && (await getSettings()).maintenanceMode) {
-      return res
-        .status(503)
-        .json({
-          error: {
-            code: 'MAINTENANCE',
-            message: 'Bookings are paused for scheduled maintenance. Please try again soon.',
-          },
-        });
+      return res.status(503).json({
+        error: {
+          code: 'MAINTENANCE',
+          message: 'Bookings are paused for scheduled maintenance. Please try again soon.',
+        },
+      });
     }
     next();
   });

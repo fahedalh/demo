@@ -16,6 +16,11 @@ export default tseslint.config(
     },
   },
   {
+    // CommonJS tooling scripts
+    files: ['**/*.cjs'],
+    rules: { '@typescript-eslint/no-require-imports': 'off' },
+  },
+  {
     files: ['apps/*-web/**/*.tsx', 'apps/admin-dashboard/**/*.tsx', 'packages/ui/**/*.tsx'],
     plugins: { 'react-hooks': reactHooks },
     rules: { 'react-hooks/rules-of-hooks': 'error', 'react-hooks/exhaustive-deps': 'warn' },

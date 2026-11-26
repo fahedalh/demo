@@ -110,13 +110,11 @@ export function startEngine() {
     watchId = navigator.geolocation.watchPosition(
       (p) => {
         useLocation.setState({ source: 'gps', gpsError: null });
-        useLocation
-          .getState()
-          .setPos({
-            lat: p.coords.latitude,
-            lng: p.coords.longitude,
-            heading: p.coords.heading ?? undefined,
-          });
+        useLocation.getState().setPos({
+          lat: p.coords.latitude,
+          lng: p.coords.longitude,
+          heading: p.coords.heading ?? undefined,
+        });
       },
       (err) => useLocation.setState({ gpsError: err.message, source: 'none' }),
       { enableHighAccuracy: true, maximumAge: 2000, timeout: 15000 },

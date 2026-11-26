@@ -306,11 +306,10 @@ export function ChatDialog({
   const onMessage = useCallback(
     (m: MessageDTO) => {
       if (m.rideId !== ride.id) return;
-      qc.setQueryData<MessageDTO[]>(key, (prev) =>
+      qc.setQueryData<MessageDTO[]>(['messages', ride.id], (prev) =>
         prev?.some((x) => x.id === m.id) ? prev : [...(prev ?? []), m],
       );
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [ride.id, qc],
   );
   useSocketEvent('ride:message', onMessage);
